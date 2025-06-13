@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Drunk - Punk</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8f8fa; margin: 0; padding: 0;}
+    h1 { text-align: center; color: #208278; margin-top: 35px; }
+    .nav-bar { position: fixed; top: 0; left: 0; width: 100vw; background: #2196f3; color: white;
+      display: flex; justify-content: flex-end; gap: 2px; z-index: 1000; box-shadow: 0 2px 8px #0002; padding: 7px 0; }
+    .nav-link { color: white; padding: 7px 24px; text-decoration: none; font-weight: bold; font-size: 1.07em;
+      border-radius: 0 0 10px 10px; transition: background 0.18s; display: flex; align-items: center; gap: 6px; }
+    .nav-link.active, .nav-link:hover { background: #1760a3; }
+    .sekce { background: #fff; border-radius: 14px; box-shadow: 0 2px 16px #b7d9db35; margin: 20px auto 0 auto; padding: 18px 16px 15px 16px; max-width: 430px;}
+    .sekce h2 {margin-top:0;}
+    .list {margin:8px 0;}
+    .polozka {padding: 5px 0 5px 0; font-size: 1.08em; border-bottom: 1px solid #eee; display:flex;align-items:center;}
+    .ikona {font-size: 1.22em; margin-right:7px;}
+    .none {color:#aaa;}
+   @media (max-width:600px){
+  .container{padding:10px;}
+  .nav-link{padding:7px 8px;font-size:1em;}
+  .nav-bar{flex-wrap:wrap;}   /* ← tady je ten nový řádek */
+  body { padding-top: 90px; }
+}
+
+  </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <a href="pestovani.html" class="nav-link">🌱 Pěstování</a>
+    <a href="vyroba.html" class="nav-link">⚗️ Výroba</a>
+    <a href="jzd.html" class="nav-link">🐮 JZD</a>
+    <a href="sklad.html" class="nav-link active">📦 Sklad</a>
+    <a href="finance.html" class="nav-link">💰 Finance</a>
+    <a href="hotel.html" class="nav-link">🏨 Hotel</a>
+    <a href="pub.html" class="nav-link">🏡 Hospoda</a>
+    <a href="market.html" class="nav-link">🏪 Tržnice</a>
+     </div>
+  <h1>📦 Sklad</h1>
+
+  <div class="sekce">
+    <h2>🌾 Suroviny a ovoce</h2>
+    <div id="suroviny" class="list"></div>
+  </div>
+  <div class="sekce">
+    <h2>🌱 Semena</h2>
+    <div id="semena" class="list"></div>
+  </div>
+  <div class="sekce">
+    <h2>🐮 Zvířata</h2>
+    <div id="zvirata" class="list"></div>
+  </div>
+  <div class="sekce">
+    <h2>🔧 Stroje</h2>
+    <div id="stroje" class="list"></div>
+  </div>
+  <div class="sekce">
+    <h2>🍺 Kvasy a výrobky</h2>
+    <div id="vyrobky" class="list"></div>
+  </div>
+
+<script>
+if (!localStorage.getItem("lihobaronFarmStorage")) {
+  localStorage.setItem("lihobaronFarmStorage", JSON.stringify({
+    pšenice: 0, chmel: 0, kukuřice: 0, reva: 0, jablko: 0, hrušky: 0, švestky: 0,
+    meruňky: 0, broskve: 0, mrkev: 0, brambora: 0, rajčata: 0, chilli: 0,
+    okurky: 0, třešně: 0, cibule: 0, česnek: 0, jahody: 0
+  }));
+}
+if (!localStorage.getItem("lihobaronFarmSeeds")) {
+  localStorage.setItem("lihobaronFarmSeeds", JSON.stringify({
+    pšenice: 0, chmel: 0, kukuřice: 0, reva: 0, jablko: 0, hruška: 0, švestka: 0,
+    meruňka: 0, broskev: 0, mrkev: 0, brambora: 0, rajčata: 0, chilli: 0,
+    okurky: 0, třešně: 0, cibule: 0, česnek: 0, jahody: 0
+  }));
+}
+if (!localStorage.getItem("lihobaronFarmXP")) {
+  localStorage.setItem("lihobaronFarmXP", 0);
+}
+if (!localStorage.getItem("lihobaronFarmCoins")) {
+  localStorage.setItem("lihobaronFarmCoins", 200);
+}
+
+// ZVÍŘATA A PRODUKTY
+const animalList = {
+  krava:     { nazev: "Kráva", emoji: "🐮" },
+  slepice:   { nazev: "Slepice", emoji: "🐔" },
+  prase:     { nazev: "Prase", emoji: "🐷" },
+  koza:      { nazev: "Koza", emoji: "🐐" },
+  krocan:    { nazev: "Krocan", emoji: "🦃" }
+};
+const animalProducts = {
+  mleko:        { nazev: "Mléko", emoji: "🥛" },
+  kozi_mleko:   { nazev: "Kozí mléko", emoji: "🥛" },
+  vejce:        { nazev: "Vejce", emoji: "🥚" },
+  sunka:        { nazev: "Šunka", emoji: "🍖" },
+  kruti_maso:   { nazev: "Krůtí maso", emoji: "🍗" },
+ 
+};
+// Suroviny pro horní box
+const surovinyList = {
+  pšenice: { nazev: "Pšenice", emoji: "🌾" }, chmel:   { nazev: "Chmel", emoji: "🍃" }, kukuřice: { nazev: "Kukuřice", emoji: "🌽" },
+  reva:    { nazev: "Réva", emoji: "🍇" }, jablko:  { nazev: "Jablko", emoji: "🍎" }, hrušky:  { nazev: "Hrušky", emoji: "🍐" },
+  švestky: { nazev: "Švestky", emoji: "🟣" }, meruňky: { nazev: "Meruňky", emoji: "🍑" }, broskve: { nazev: "Broskve", emoji: "🍊" },
+  mrkev:   { nazev: "Mrkev", emoji: "🥕" }, brambora: { nazev: "Brambory", emoji: "🥔" }, rajčata: { nazev: "Rajčata", emoji: "🍅" },
+  chilli:  { nazev: "Chilli", emoji: "🌶" }, okurky:  { nazev: "Okurky", emoji: "🥒" }, třešně:    { nazev: "Třešně", emoji: "🍒" },
+  cibule:  { nazev: "Cibule", emoji: "🧅" }, česnek:  { nazev: "Česnek", emoji: "🧄" }, jahody:  { nazev: "Jahody", emoji: "🍓" }
+};
+const semenaList = {
+  pšenice: { nazev: "Semena pšenice", emoji: "🌾" }, chmel:   { nazev: "Semena chmele", emoji: "🍃" }, kukuřice: { nazev: "Semena kukuřice", emoji: "🌽" },
+  reva:    { nazev: "Semena révy", emoji: "🍇" }, jablko:  { nazev: "Semena jablek", emoji: "🍎" }, hruška:  { nazev: "Semena hrušky", emoji: "🍐" },
+  švestka: { nazev: "Semena švestky", emoji: "🟣" }, meruňka: { nazev: "Semena meruňky", emoji: "🍑" }, broskev: { nazev: "Semena broskve", emoji: "🍊" },
+  mrkev:     { nazev: "Semena mrkve", emoji: "🥕" }, brambora:  { nazev: "Semena brambory", emoji: "🥔" }, rajčata:   { nazev: "Semena rajčat", emoji: "🍅" },
+  chilli:    { nazev: "Semena chilli", emoji: "🌶" }, okurky:    { nazev: "Semena okurek", emoji: "🥒" }, třešně:      { nazev: "Semena třešně", emoji: "🍒" },
+  cibule:    { nazev: "Semena cibule", emoji: "🧅" }, česnek:    { nazev: "Semena česneku", emoji: "🧄" }, jahody:    { nazev: "Semena jahod", emoji: "🍓" }
+};
+const strojeList = {
+  kad_pivo: "Kád na pivo 🍺", kotel_pivo: "Kotel na pivo ⚱️", lis_vino: "Lis na víno 🍇",
+  kad_vino: "Kád na víno 🍷", kad_pal: "Kád na pálenky 🥃", dest_apar: "Destilační aparatura 🔥"
+};
+const vyrobkyList = {
+  // Původní produkty
+  kvas_pivo: { nazev: "Kvas na pivo", emoji: "🍺" },
+  kvas_vino: { nazev: "Kvas na víno", emoji: "🍷" },
+  kvas_švestky: { nazev: "Švestkový kvas", emoji: "🟣🧪" },
+  kvas_hrušky: { nazev: "Hruškový kvas", emoji: "🍐🧪" },
+  kvas_meruňky: { nazev: "Meruňkový kvas", emoji: "🍑🧪" },
+  kvas_broskve: { nazev: "Broskvový kvas", emoji: "🍊🧪" },
+  pivo: { nazev: "Pivo", emoji: "🍻" },
+  most_vino: { nazev: "Vinný mošt", emoji: "🧃" },
+  vino: { nazev: "Víno", emoji: "🍷" },
+  popkorn: { nazev: "Popkorn", emoji: "🍿" },
+  palenka_švestky: { nazev: "Slivovice", emoji: "🟣🥃" },
+  palenka_hrušky: { nazev: "Hruškovice", emoji: "🍐🥃" },
+  palenka_meruňky: { nazev: "Meruňkovice", emoji: "🍑🥃" },
+  palenka_broskve: { nazev: "Broskvovice", emoji: "🍊🥃" },
+  // Nové produkty od zvířat:
+  mleko: { nazev: "Mléko", emoji: "🥛" },
+  kozi_mleko: { nazev: "Kozí mléko", emoji: "🥛" },
+  vejce: { nazev: "Vejce", emoji: "🥚" },
+  sunka: { nazev: "Šunka", emoji: "🍖" },
+  kruti_maso: { nazev: "Krůtí maso", emoji: "🍗" },
+  hnuj: { nazev: "Hnůj", emoji: "💩" }
+};
+
+// --- Zvířata sekce ---
+function vypisZvirata() {
+  // Čteš pole zvířat z localStorage – struktura: [{typ:'krava'...}, ...]
+  const animals = JSON.parse(localStorage.getItem("lihobaronZvirata") || "[]");
+  let counts = {};
+  animals.forEach(z => {
+    if (z.mrtve) return; // nezobrazuj mrtvé
+    if (!counts[z.typ]) counts[z.typ] = 0;
+    counts[z.typ]++;
+  });
+  let out = "";
+  Object.keys(animalList).forEach(k => {
+    if (counts[k]) out += `<div class="polozka"><span class="ikona">${animalList[k].emoji}</span> ${animalList[k].nazev}: <b>${counts[k]}</b></div>`;
+  });
+  if (!out) out = `<div class="none">Žádná živá zvířata</div>`;
+  document.getElementById("zvirata").innerHTML = out;
+}
+
+// --- Suroviny ---
+function vypisSuroviny() {
+  const sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
+  let out = "";
+  Object.keys(surovinyList).forEach(k => {
+    if (sklad[k]) out += `<div class="polozka"><span class="ikona">${surovinyList[k].emoji}</span> ${surovinyList[k].nazev}: <b>${sklad[k]}</b></div>`;
+  });
+  if (!out) out = `<div class="none">Žádné suroviny</div>`;
+  document.getElementById("suroviny").innerHTML = out;
+}
+// --- Semena ---
+function vypisSemena() {
+  const seeds = JSON.parse(localStorage.getItem("lihobaronFarmSeeds") || "{}");
+  let out = "";
+  Object.keys(semenaList).forEach(k => {
+    if (seeds[k]) out += `<div class="polozka"><span class="ikona">${semenaList[k].emoji}</span> ${semenaList[k].nazev}: <b>${seeds[k]}</b></div>`;
+  });
+  if (!out) out = `<div class="none">Žádná semena</div>`;
+  document.getElementById("semena").innerHTML = out;
+}
+// --- Stroje ---
+function vypisStroje() {
+  const machines = JSON.parse(localStorage.getItem("lihobaronMachines") || "[]");
+  let out = "";
+  Object.keys(strojeList).forEach(k => {
+    if (machines.includes(k)) out += `<div class="polozka">${strojeList[k]}</div>`;
+  });
+  if (!out) out = `<div class="none">Žádné stroje</div>`;
+  document.getElementById("stroje").innerHTML = out;
+}
+// --- Kvasy a výrobky ---
+function vypisVyrobky() {
+  const sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
+  let out = "";
+  Object.keys(vyrobkyList).forEach(k => {
+    if (sklad[k]) out += `<div class="polozka"><span class="ikona">${vyrobkyList[k].emoji}</span> ${vyrobkyList[k].nazev}: <b>${sklad[k]}</b></div>`;
+  });
+  if (!out) out = `<div class="none">Žádné kvasy ani výrobky</div>`;
+  document.getElementById("vyrobky").innerHTML = out;
+}
+
+vypisStroje();
+vypisSemena();
+vypisSuroviny();
+vypisVyrobky();
+vypisZvirata();
+</script>
+</body>
+</html>

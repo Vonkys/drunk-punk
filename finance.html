@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>💰 Finance – Drunk Punk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8f8fa; margin: 0; padding: 0; }
+    h1 { text-align: center; color: #208278; margin-top: 36px; }
+    .nav-bar { position: fixed; top: 0; left: 0; width: 100vw; background: #2196f3; color: white;
+      display: flex; justify-content: flex-end; gap: 2px; z-index: 1000; box-shadow: 0 2px 8px #0002; padding: 7px 0; }
+    .nav-link { color: white; padding: 7px 24px; text-decoration: none; font-weight: bold; font-size: 1.07em;
+      border-radius: 0 0 10px 10px; transition: background 0.18s; display: flex; align-items: center; gap: 6px; }
+    .nav-link.active, .nav-link:hover { background: #1760a3; }
+    .container { max-width: 430px; margin: 18px auto 0 auto; background: #fff; border-radius: 14px;
+      box-shadow: 0 2px 16px #b7d9db35; padding: 23px 18px 18px 18px;}
+    #money { font-size: 1.2em; font-weight: bold; color: #156c3c;}
+    .item-row { display: flex; align-items: center; border-bottom: 1px solid #eee;
+      padding: 8px 0; font-size: 1.08em;}
+    .item-row:last-child { border-bottom: none; }
+    .item-emoji { font-size: 1.17em; margin-right:7px;}
+    .item-label { flex: 1; }
+    .item-val { min-width: 36px; text-align: right; font-variant-numeric: tabular-nums; margin-left: 12px;}
+    .sell-btn { margin-left: 10px; background: #2196f3; color: white; border: none;
+      border-radius: 5px; padding: 4px 10px; font-weight: bold; cursor: pointer;}
+    .sell-btn:hover { background: #1760a3;}
+    .msg { text-align: center; margin: 10px auto 0 auto; font-size: 1.1em; color: #1760a3; }
+   @media (max-width:600px){
+  .container{padding:10px;}
+  .nav-link{padding:7px 8px;font-size:1em;}
+  .nav-bar{flex-wrap:wrap;}   /* ← tady je ten nový řádek */
+  body { padding-top: 90px; }
+}
+
+  </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <a href="pestovani.html" class="nav-link">🌱 Pěstování</a>
+    <a href="vyroba.html" class="nav-link">⚗️ Výroba</a>
+    <a href="jzd.html" class="nav-link">🐮 JZD</a>
+    <a href="sklad.html" class="nav-link">📦 Sklad</a>
+    <a href="finance.html" class="nav-link active">💰 Finance</a>
+    <a href="hotel.html" class="nav-link">🏨 Hotel</a>
+    <a href="pub.html" class="nav-link">🏡 Hospoda</a>
+    <a href="market.html" class="nav-link">🏪 Tržnice</a>
+   </div>
+  <h1>💰 Finance</h1>
+  <div class="container">
+    <div style="text-align:right;font-weight:bold;">Zůstatek: <span id="money">0</span> Kč</div>
+    <div id="sell-list"></div>
+    <div id="msg" class="msg"></div>
+  </div>
+<script>
+const items = [
+      // Plodiny
+      { key: "pšenice", label: "Pšenice", emoji: "🌾" },
+      { key: "chmel", label: "Chmel", emoji: "🍃" },
+      { key: "kukuřice", label: "Kukuřice", emoji: "🌽" },
+      { key: "reva", label: "Réva", emoji: "🍇" },
+      { key: "broskve", label: "Broskve", emoji: "🍊" },
+      { key: "meruňky", label: "Meruňky", emoji: "🍑" },
+      { key: "jablko", label: "Jablko", emoji: "🍎" },
+      { key: "hrušky",  label: "Hrušky", emoji: "🍐" },
+      { key: "švestky", label: "Švestky", emoji: "🟣" },
+      { key: "mrkev", label: "Mrkev", emoji: "🥕" },
+      { key: "brambora", label: "Brambory", emoji: "🥔" },
+      { key: "rajčata", label: "Rajčata", emoji: "🍅" },
+      { key: "chilli", label: "Chilli", emoji: "🌶" },
+      { key: "okurky", label: "Okurky", emoji: "🥒" },
+      { key: "cibule", label: "Cibule", emoji: "🧅" },
+      { key: "česnek", label: "Česnek", emoji: "🧄" },
+      { key: "jahody", label: "Jahody", emoji: "🍓" },
+      { key: "třešně", label: "Třešně", emoji: "🍒" },
+      // Kvasy a most
+      { key: "kvas_pivo", label: "Pivní kvas", emoji: "🍺🧪" },
+      { key: "most_vino", label: "Vinný mošt", emoji: "🧃" },
+      { key: "popkorn", label: "Popkorn", emoji: "🍿" },
+      { key: "kvas_švestky", label: "Švestkový kvas", emoji: "🟣🧪" },
+      { key: "kvas_hrušky",  label: "Hruškový kvas", emoji: "🍐🧪" },
+      { key: "kvas_meruňky", label: "Meruňkový kvas", emoji: "🍑🧪" },
+      { key: "kvas_broskve", label: "Broskvový kvas", emoji: "🍊🧪" },
+      
+      // Výrobky a pálenky
+      { key: "pivo",        label: "Pivo", emoji: "🍻" },
+      { key: "vino",        label: "Víno", emoji: "🍷" },
+      { key: "mléko", label: "Mléko", emoji: "🥛" },
+      { key: "kozí_mléko", label: "Kozí mléko", emoji: "🥛" },
+      { key: "vejce", label: "Vejce", emoji: "🥚" },
+      { key: "šunka", label: "Šunka", emoji: "🍖" },
+      { key: "krůtí_maso", label: "Krůtí maso", emoji: "🍗" },
+      { key: "palenka_švestky", label: "Slivovice", emoji: "🟣🥃" },
+      { key: "palenka_hrušky",  label: "Hruškovice", emoji: "🍐🥃" },
+      { key: "palenka_meruňky", label: "Meruňkovice", emoji: "🍑🥃" },
+      { key: "palenka_broskve", label: "Broskvovice", emoji: "🍊🥃" }
+    ];
+
+// Výchozí ceny
+const defaultPrices = {
+  pšenice: 7, chmel: 9, kukuřice: 12, reva: 12, broskve: 20, meruňky: 18, jablko: 13, hrušky: 13, švestky: 13, mrkev: 9, brambora: 11,  rajčata: 12, chilli: 15, okurky: 13,
+  cibule: 14, česnek: 16, jahody: 25, třešně: 15,
+  kvas_pivo: 18, most_vino: 45,
+  kvas_švestky: 17, kvas_hrušky: 15, kvas_meruňky: 18, kvas_broskve: 19,
+  pivo: 32, vino: 60, popkorn: 50,
+  mléko: 25, kozí_mléko: 28, vejce: 8, šunka: 30, krůtí_maso: 25,
+  palenka_švestky: 46, palenka_hrušky: 44, palenka_meruňky: 48, palenka_broskve: 50
+};
+const prices = {...defaultPrices};
+
+
+// Nové: Definice zvířat pro prodej (stejné ceny jako obchod/JZD!)
+const animalDefs = {
+  slepice: { nazev: "Slepice", emoji: "🐔", cena: 100 },
+  krocan:  { nazev: "Krocan", emoji: "🦃", cena: 200 },
+  prase:   { nazev: "Prase", emoji: "🐷", cena: 500 },
+  koza:    { nazev: "Koza", emoji: "🐐", cena: 700 },
+  krava:   { nazev: "Kráva", emoji: "🐮", cena: 1000 }
+};
+
+// Načtení zůstatku
+function getMoney() {
+  return +(localStorage.getItem("lihobaronFarmCoins") || 0);
+}
+function setMoney(v) {
+  document.getElementById("money").textContent = v;
+  localStorage.setItem("lihobaronFarmCoins", v);
+}
+// Výpis výrobků (prodávané zboží)
+function renderSellList() {
+  setMoney(getMoney());
+  let sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
+  let html = "";
+  items.forEach((item, idx) => {
+    let val = sklad[item.key] || 0;
+    if (val > 0) {
+      html += `<div class="item-row" style="align-items: flex-start;">
+        <span class="item-emoji" style="margin-top:7px;">${item.emoji}</span>
+        <span class="item-label" style="min-width:90px;">${item.label}</span>
+        <div style="margin-left:auto;text-align:right;">
+          <div style="font-size:0.97em;color:#888;">Množství: <b>${val}</b></div>
+          <div style="font-size:0.97em;color:#888;">Cena: ${prices[item.key]} Kč</div>
+          <button class="sell-btn" style="margin-top:6px;" onclick="sell(${idx})">Prodat 1</button>
+          <button class="sell-btn" style="margin-top:3px;" onclick="sellAll(${idx})">Prodat vše</button>
+        </div>
+      </div>`;
+    }
+  });
+  if (!html) html = "<div style='text-align:center;color:#aaa;margin-top:17px;'>Nemáš nic na prodej.<br>Vysaď něco, vypěstuj, uvař nebo vypal slivku!</div>";
+  document.getElementById("sell-list").innerHTML = html;
+  renderZvirataList();
+}
+
+
+// Prodej výrobků (starý)
+function sell(idx) {
+  let sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
+  let item = items[idx];
+  if ((sklad[item.key]||0) < 1) { showMsg("Nemáš co prodat!"); return; }
+  sklad[item.key]--;
+  localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
+  let coins = getMoney() + prices[item.key];
+  setMoney(coins);
+  showMsg(`Prodáno 1× ${item.label} za ${prices[item.key]} Kč`);
+  renderSellList();
+}
+function sellAll(idx) {
+  let sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
+  let item = items[idx];
+  let count = sklad[item.key]||0;
+  if (count < 1) { showMsg("Nemáš co prodat!"); return; }
+  sklad[item.key]=0;
+  localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
+  let coins = getMoney() + prices[item.key]*count;
+  setMoney(coins);
+  showMsg(`Prodáno ${count}× ${item.label} za ${prices[item.key]*count} Kč`);
+  renderSellList();
+}
+
+// === Prodej zvířat (nová sekce pod výrobky) ===
+
+function pocetZvirat(typ) {
+  let animals = JSON.parse(localStorage.getItem("lihobaronZvirata") || "[]");
+  return animals.filter(z => z.typ === typ && !z.mrtve).length;
+}
+function prodatZvire(typ) {
+  let animals = JSON.parse(localStorage.getItem("lihobaronZvirata") || "[]");
+  let idx = animals.findIndex(z => z.typ === typ && !z.mrtve);
+  if (idx > -1) {
+    animals.splice(idx, 1);
+    localStorage.setItem("lihobaronZvirata", JSON.stringify(animals));
+    let coins = getMoney() + animalDefs[typ].cena;
+    setMoney(coins);
+    showMsg(`Prodáno 1× ${animalDefs[typ].nazev} za ${animalDefs[typ].cena} Kč`);
+    renderSellList();
+  } else {
+    showMsg("Nemáš žádné zvíře k prodeji!");
+  }
+}
+function renderZvirataList() {
+  let html = "";
+  Object.keys(animalDefs).forEach(key => {
+    let pocet = pocetZvirat(key);
+    if (pocet > 0) {
+      html += `<div class="item-row">
+        <span class="item-emoji">${animalDefs[key].emoji}</span>
+        <span class="item-label">${animalDefs[key].nazev}</span>
+        <div style="margin-left:auto;text-align:right;">
+          <div style="font-size:0.98em; color:#888;">Počet: <b>${pocet}</b></div>
+          <div style="font-size:0.98em; color:#888;">Cena: ${animalDefs[key].cena} Kč</div>
+          <button class="sell-btn" onclick="prodatZvire('${key}')">Prodat 1</button>
+        </div>
+      </div>`;
+    }
+  });
+  if (!html) html = "<div style='text-align:center;color:#aaa;margin-top:17px;'>Nemáš žádná zvířata na prodej.</div>";
+  document.getElementById("sell-list").insertAdjacentHTML('beforeend', `<div style='margin-top:24px;'><b>🐮 Prodej zvířat</b></div>` + html);
+}
+
+
+// Zpráva
+function showMsg(msg) {
+  document.getElementById("msg").textContent = msg;
+  setTimeout(()=>document.getElementById("msg").textContent="",1800);
+}
+
+renderSellList();
+</script>
+</body>
+</html>

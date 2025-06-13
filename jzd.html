@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>🐮 JZD – Chov zvířat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; padding-top: 48px; }
+    h1 { text-align: center; margin: 20px; color: #444; }
+    .money { text-align: center; font-weight: bold; color: #187557; margin-bottom: 6px; font-size: 1.1em; }
+    .nav-bar {
+      position: fixed; top: 0; left: 0; width: 100vw; background: #2196f3; color: white;
+      display: flex; justify-content: flex-end; gap: 2px; z-index: 1000;
+      box-shadow: 0 2px 8px #0002; padding: 7px 0;
+    }
+    .nav-link { color: white; padding: 7px 24px; text-decoration: none; font-weight: bold; font-size: 1.07em; border-radius: 0 0 10px 10px; transition: background 0.18s; display: flex; align-items: center; gap: 6px; }
+    .nav-link.active, .nav-link:hover { background: #1760a3; }
+    .sekce { max-width: 480px; margin: 20px auto; background: #fff; border-radius: 12px; box-shadow: 0 0 10px #ccc; padding: 15px; }
+    .zvire { padding: 10px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; }
+    .zvire:last-child { border-bottom: none; }
+    .hlavicka { display: flex; justify-content: space-between; align-items: center; }
+    .stav, .odpocty { font-size: 0.9em; color: #666; }
+    .tlacitka { margin-top: 10px; display: flex; gap: 8px; }
+    button { padding: 6px 10px; border: none; border-radius: 5px; background: #2196f3; color: white; cursor: pointer; font-weight: bold; }
+    button:hover { background: #1760a3; }
+    .mrtve { color: red; font-weight: bold; }
+    .shop-item { border-bottom: 1px solid #eee; padding: 10px 0; }
+    .shop-item:last-child { border-bottom: none; }
+    .shop-header { font-weight: bold; margin-bottom: 5px; }
+    .disabled { opacity: 0.5; cursor: not-allowed; }
+    .progress-bar { height: 10px; background: #ccc; border-radius: 6px; overflow: hidden; margin-top: 4px; }
+    .progress-fill { height: 10px; background: #4caf50; transition: width 1s linear; }
+    .hladovi { color: #e03; font-weight: bold; }
+   @media (max-width:600px){
+  .container{padding:10px;}
+  .nav-link{padding:7px 8px;font-size:1em;}
+  .nav-bar{flex-wrap:wrap;}   /* ← tady je ten nový řádek */
+  body { padding-top: 90px; }
+}
+
+  </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <a href="pestovani.html" class="nav-link">🌱 Pěstování</a>
+    <a href="vyroba.html" class="nav-link">⚗️ Výroba</a>
+    <a href="jzd.html" class="nav-link active">🐮 JZD</a>
+    <a href="sklad.html" class="nav-link">📦 Sklad</a>
+    <a href="finance.html" class="nav-link">💰 Finance</a>
+    <a href="hotel.html" class="nav-link">🏨 Hotel</a>
+    <a href="pub.html" class="nav-link">🏡 Hospoda</a>
+    <a href="market.html" class="nav-link">🏪 Tržnice</a>
+    </div>
+  <h1>🐮 JZD – Chov zvířat</h1>
+  <div class="money">💵 Zůstatek: <span id="money"></span> Kč</div>
+  <div class="money">🌾 Pšenice ve skladu: <span id="psenice"></span> ks</div>
+
+  <div class="sekce">
+    <h2>🛒 Nakup zvířata</h2>
+    <div id="zoo-shop"></div>
+  </div>
+  <div class="sekce" id="jzd"></div>
+
+<script>
+if (!localStorage.getItem("lihobaronFarmStorage")) {
+  localStorage.setItem("lihobaronFarmStorage", JSON.stringify({
+    pšenice: 0, chmel: 0, kukuřice: 0, reva: 0, jablko: 0, hrušky: 0, švestky: 0,
+    meruňky: 0, broskve: 0, mrkev: 0, brambora: 0, rajčata: 0, chilli: 0,
+    okurky: 0, třešně: 0, cibule: 0, česnek: 0, jahody: 0
+  }));
+}
+if (!localStorage.getItem("lihobaronFarmSeeds")) {
+  localStorage.setItem("lihobaronFarmSeeds", JSON.stringify({
+    pšenice: 0, chmel: 0, kukuřice: 0, reva: 0, jablko: 0, hruška: 0, švestka: 0,
+    meruňka: 0, broskev: 0, mrkev: 0, brambora: 0, rajčata: 0, chilli: 0,
+    okurky: 0, třešně: 0, cibule: 0, česnek: 0, jahody: 0
+  }));
+}
+if (!localStorage.getItem("lihobaronFarmXP")) {
+  localStorage.setItem("lihobaronFarmXP", 0);
+}
+if (!localStorage.getItem("lihobaronFarmCoins")) {
+  localStorage.setItem("lihobaronFarmCoins", 200);
+}
+
+var sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
+var animals = JSON.parse(localStorage.getItem("lihobaronZvirata") || "[]");
+
+if (!localStorage.getItem("lihobaronFarmCoins")) localStorage.setItem("lihobaronFarmCoins", "200");
+if (sklad["pšenice"] == null) sklad["pšenice"] = 0;
+localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
+
+var coins = +localStorage.getItem("lihobaronFarmCoins") || 200;
+var krmInterval = 1 * 60 * 60 * 1000; // 1 hodina
+
+var animalDefs = {
+  slepice: { emoji: "🐔", jmeno: "Slepice", cena: 100, produkty: [
+    { typ: "vejce", interval: 1 * 60 * 60 * 1000 },
+    { typ: "hnůj", interval: 12 * 60 * 60 * 1000 }
+  ]},
+  krocan: { emoji: "🦃", jmeno: "Krocan", cena: 200, produkty: [
+    { typ: "krůtí maso", interval: 2 * 60 * 60 * 1000 },
+    { typ: "hnůj", interval: 12 * 60 * 60 * 1000 }
+  ]},
+  prase: { emoji: "🐷", jmeno: "Prase", cena: 500, produkty: [
+    { typ: "šunka", interval: 3 * 60 * 60 * 1000 },
+    { typ: "hnůj", interval: 12 * 60 * 60 * 1000 }
+  ]},
+  koza: { emoji: "🐐", jmeno: "Koza", cena: 700, produkty: [
+    { typ: "kozí mléko", interval: 3 * 60 * 60 * 1000 },
+    { typ: "hnůj", interval: 12 * 60 * 60 * 1000 }
+  ]},
+  krava: { emoji: "🐮", jmeno: "Kráva", cena: 1000, produkty: [
+    { typ: "mléko", interval: 5 * 60 * 60 * 1000 },
+    { typ: "hnůj", interval: 12 * 60 * 60 * 1000 }
+  ]}
+};
+
+function saveAnimals() {
+  localStorage.setItem("lihobaronZvirata", JSON.stringify(animals));
+}
+function setMoney(m) {
+  coins = m;
+  localStorage.setItem("lihobaronFarmCoins", m);
+  document.getElementById("money").textContent = m;
+}
+function renderPsenice() {
+  document.getElementById("psenice").textContent = sklad["pšenice"] || 0;
+}
+function renderShop() {
+  var shop = document.getElementById("zoo-shop");
+  shop.innerHTML = "";
+  Object.keys(animalDefs).forEach(function(key) {
+    var a = animalDefs[key];
+    shop.innerHTML += '<div class="shop-item">' +
+      '<div class="shop-header">' + a.emoji + ' <b>' + a.jmeno + '</b> – ' + a.cena + ' Kč</div>' +
+      '<div style="font-size:0.9em; color:#555; margin-bottom:5px;">Žere: 🌾 1 pšenice / hod<br>Výstupy: ' +
+      a.produkty.map(function(p) {
+        return p.typ + ' každé ' + Math.round(p.interval/3600000) + 'h';
+      }).join(", ") +
+      '</div>' +
+      '<button onclick="koupitZvire(\'' + key + '\')">Koupit</button>' +
+      '</div>';
+  });
+}
+function koupitZvire(typ) {
+  var def = animalDefs[typ];
+  if (coins < def.cena) {
+    alert("Nemáš dost peněz!");
+    return;
+  }
+  coins -= def.cena;
+  setMoney(coins);
+  var z = { typ: typ, last_feed: Date.now() }; // čas posledního krmení
+  def.produkty.forEach(function(p) {
+    z['last_' + p.typ] = Date.now();
+  });
+  animals.push(z);
+  saveAnimals();
+  renderAnimals();
+  renderShop();
+  alert("Zvíře koupeno!");
+}
+
+function formatTime(ms) {
+  if (ms < 0) ms = 0;
+  var s = Math.floor(ms / 1000);
+  var h = Math.floor(s / 3600);
+  var m = Math.floor((s % 3600) / 60);
+  var sec = s % 60;
+  return h + "h " + m + "m " + sec + "s";
+}
+
+function krmeniLoop() {
+  var now = Date.now();
+  var changed = false;
+  var hnujLimit = 12 * 60 * 60 * 1000; // 12 hodin limit pro neodklizený hnůj
+
+  animals.forEach(function(zvire) {
+    if (zvire.mrtve) return;
+    var feedTime = zvire.last_feed || now;
+    // kolikrát měl být nakrmen od posledního feedu?
+    var feedings = Math.floor((now - feedTime) / krmInterval);
+    if (feedings > 0) {
+      for (var i = 0; i < feedings; i++) {
+        if ((sklad["pšenice"] || 0) > 0) {
+          sklad["pšenice"] -= 1;
+          zvire.last_feed = (zvire.last_feed || now) + krmInterval;
+          changed = true;
+        } else {
+          zvire.mrtve = true;
+          changed = true;
+          break;
+        }
+      }
+    }
+    // Kontrola hnoje – pokud nebyl dlouho odklizen, zvíře chcípne
+    var lastHnuj = zvire["last_hnůj"] || zvire.last_feed || now;
+    if (now - lastHnuj > hnujLimit) {
+      zvire.mrtve = true;
+      changed = true;
+    }
+  });
+  if (changed) {
+    localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
+    saveAnimals();
+  }
+}
+
+
+function renderAnimals() {
+  var kont = document.getElementById("jzd");
+  kont.innerHTML = "";
+  if (animals.length === 0) {
+    kont.innerHTML = '<p style="text-align:center; color:#999;">Zatím žádná zvířata.</p>';
+    return;
+  }
+  var now = Date.now();
+  animals.forEach(function(zvire, idx) {
+    var def = animalDefs[zvire.typ];
+    if (!def) return;
+    var isDead = zvire.mrtve;
+
+    var html = '<div class="zvire">' +
+      '<div class="hlavicka">' +
+      '<span>' + def.emoji + ' <b>' + def.jmeno + '</b></span>' +
+      '<span class="stav">' + (isDead ? '<span class="mrtve">Chcíplo (hlady)</span>' : 'Žije') + '</span>' +
+      '</div>';
+
+    if (!isDead) {
+      html += '<div class="odpocty">';
+      // Krmení
+      var feedInterval = krmInterval;
+      var lastFeed = zvire.last_feed || now;
+      var timeToFeed = feedInterval - (now - lastFeed);
+      html += '<div>🍞 krmení za: <span class="' + (timeToFeed < 60000 ? 'hladovi' : '') + '">' + formatTime(timeToFeed) + '</span>';
+      var progressF = 100 - Math.round(timeToFeed / feedInterval * 100);
+      html += '<div class="progress-bar"><div class="progress-fill" style="width:' + progressF + '%"></div></div></div>';
+
+      // Produkty
+      def.produkty.forEach(function(prod) {
+        var last = zvire['last_' + prod.typ] || 0;
+        var zbyva = Math.max(0, prod.interval - (now - last));
+        var progress = 100 - Math.round(zbyva / prod.interval * 100);
+        html += '<div>⏳ ' + prod.typ + ': ' + formatTime(zbyva) +
+        '<div class="progress-bar"><div class="progress-fill" style="width:' + progress + '%"></div></div></div>';
+      });
+      html += '</div>';
+      html += '<div class="tlacitka">' +
+        '<button onclick="sklidit(' + idx + ')">Sklidit</button>' +
+        '<button onclick="odklidit(' + idx + ')">Odklidit hnůj</button>' +
+        '</div>';
+    } else {
+      // U mrtvého zvířete tlačítko pro odklizení zdechliny
+      html += '<div class="tlacitka">' +
+        '<button onclick="odkliditMrtve(' + idx + ')">Odklidit zdechlinu</button>' +
+        '</div>';
+    }
+    html += '</div>';
+    kont.innerHTML += html;
+  });
+  renderPsenice();
+}
+
+// Nová funkce:
+function odkliditMrtve(idx) {
+  animals.splice(idx, 1);
+  saveAnimals();
+  renderAnimals();
+}
+
+
+
+function sklidit(idx) {
+  var zvire = animals[idx];
+  if (zvire.mrtve) return alert("Zvíře je mrtvé");
+  var def = animalDefs[zvire.typ];
+  var cas = Date.now();
+  var necoSklizeno = false;
+  def.produkty.forEach(function(prod) {
+    var last = zvire['last_' + prod.typ] || 0;
+    if (cas - last >= prod.interval) {
+      sklad[prod.typ] = (sklad[prod.typ] || 0) + 1;
+      zvire['last_' + prod.typ] = cas;
+      necoSklizeno = true;
+    }
+  });
+  if (necoSklizeno) {
+    alert("Sklizeno!");
+  } else {
+    alert("Toto nemůžeš ještě udělat!");
+  }
+  localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
+  saveAnimals();
+  renderAnimals();
+}
+
+function odklidit(idx) {
+  var zvire = animals[idx];
+  var def = animalDefs[zvire.typ];
+  var cas = Date.now();
+  if (zvire.mrtve) return alert("Zvíře je mrtvé");
+  def.produkty.forEach(function(prod) {
+    if (prod.typ === "hnůj") {
+      zvire['last_' + prod.typ] = cas;
+    }
+  });
+  alert("Hnůj odklizen!");
+  saveAnimals();
+  renderAnimals();
+}
+
+setMoney(coins);
+renderPsenice();
+renderAnimals();
+renderShop();
+setInterval(function() {
+  krmeniLoop();
+  renderAnimals();
+}, 1000);
+</script>
+</body>
+</html>
