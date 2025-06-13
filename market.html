@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Drunk - Punk</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8f8fa; margin: 0; padding: 0; }
+    h1 { text-align: center; color: #208278; margin-top: 35px; }
+    .nav-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      background: #2196f3;
+      color: white;
+      display: flex;
+      justify-content: flex-end;
+      gap: 2px;
+      z-index: 1000;
+      box-shadow: 0 2px 8px #0002;
+      padding: 7px 0;
+    }
+    .nav-link {
+      color: white;
+      padding: 7px 24px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.07em;
+      border-radius: 0 0 10px 10px;
+      transition: background 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .nav-link.active, .nav-link:hover {
+      background: #1760a3;
+    }
+    body { padding-top: 48px; }
+  @media (max-width:520px) {
+    h1 {font-size:1.35em;}
+    .farm {
+      max-width: 100vw;
+      gap: 16px;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(7, 80px);
+    }
+    .plot {min-width:52px; min-height:52px; font-size:0.97em;}
+    .progress-bg {width:36px;}
+    .select-crop, .shop-modal {min-width:90vw;}
+  }
+  @media (max-width:600px) {
+    .nav-bar { justify-content: center; flex-wrap: wrap; font-size: 0.97em; }
+    .nav-link { padding: 7px 8px; font-size: 1em;}
+  }
+  body { padding-top: 48px; }
+  .host-cards {
+    max-width: 430px;
+    margin: 25px auto 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .pub-card {
+    background: #f6f8fa;
+    box-shadow: 0 4px 18px #0003, 0 2px 4px #2221;
+    border-radius: 17px;
+    max-width: 430px;
+    margin: 0 auto;
+    padding: 18px 20px 16px 20px;
+    color: #222;
+    font-size: 1.12em;
+    position: relative;
+  }
+  .pub-card .img {
+    width: 55px;
+    height: 55px;
+    border-radius: 11px;
+    box-shadow: 0 2px 8px #7775;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.1em;
+    margin-right: 15px;
+  }
+  .pub-card .header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 9px;
+  }
+  .pub-card .desc {
+    font-size: 1.03em;
+    margin-bottom: 9px;
+    color: #444;
+  }
+  .pub-card .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 9px;
+  }
+  .pub-card button {
+    background: #22a324;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 6px #8883;
+    transition: background 0.15s;
+  }
+  .pub-card button.reject {
+    background: #d44;
+  }
+  .pub-card button:disabled {
+    background: #aaa;
+    cursor: default;
+    opacity: 0.7;
+  }
+  .pub-card .alert {
+    display: flex;
+    align-items: center;
+    margin-top: 12px;
+    color: #c60000;
+    font-weight: bold;
+    font-size: 1.1em;
+    gap: 7px;
+  }
+  .pub-card .alert .icon {
+    font-size: 1.3em;
+    margin-right: 4px;
+  }
+  .pub-card .done {
+    color: #177d0f;
+    font-weight: bold;
+    margin-top: 11px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .pub-card .done .icon {
+    font-size: 1.25em;
+  }
+</style>
+</head>
+<body>
+  <div class="nav-bar">
+    <a href="pestovani.html" class="nav-link">🌱 Pěstování</a>
+    <a href="vyroba.html" class="nav-link">⚗ Výroba</a>
+    <a href="jzd.html" class="nav-link">🐮 JZD</a>
+    <a href="sklad.html" class="nav-link">📦 Sklad</a>
+    <a href="finance.html" class="nav-link">💰 Finance</a>
+    <a href="hotel.html" class="nav-link">🏨 Hotel</a>
+    <a href="pub.html" class="nav-link">🏡 Hospoda</a>
+    <a href="market.html" class="nav-link active">🏪 Tržnice</a>
+   </div>
+
+  <h1 style="margin-top:38px;">🏪 Tržnice</h1>
+  <div class="desc">
+   </div>
+  
+  <div class="host-cards" id="pubCards"></div>
+
+<script>
+ // --- Inicializace výchozích hodnot, pokud chybí ---
+if (!localStorage.getItem("lihobaronFarmStorage")) {
+  localStorage.setItem("lihobaronFarmStorage", JSON.stringify({
+    pšenice: 0, chmel: 0, kukuřice: 0, reva: 0, jablko: 0, hrušky: 0, švestky: 0,
+    meruňky: 0, broskve: 0, mrkev: 0, brambora: 0, rajčata: 0, chilli: 0,
+    okurky: 0, třešně: 0, cibule: 0, česnek: 0, jahody: 0
+  }));
+}
+if (!localStorage.getItem("lihobaronFarmSeeds")) {
+  localStorage.setItem("lihobaronFarmSeeds", JSON.stringify({
+    pšenice: 0, chmel: 0, kukuřice: 0, reva: 0, jablko: 0, hruška: 0, švestka: 0,
+    meruňka: 0, broskev: 0, mrkev: 0, brambora: 0, rajčata: 0, chilli: 0,
+    okurky: 0, třešně: 0, cibule: 0, česnek: 0, jahody: 0
+  }));
+}
+if (!localStorage.getItem("lihobaronFarmXP")) {
+  localStorage.setItem("lihobaronFarmXP", 0);
+}
+if (!localStorage.getItem("lihobaronFarmCoins")) {
+  localStorage.setItem("lihobaronFarmCoins", 200);
+}
+
+
+// Všechny povolené produkty pro trh
+const MARKET_TYPES = [
+  {
+    emoji: "🛒",
+    name: "Ovocnář",
+    desc: "Hledá kvalitní ovoce do džemů.",
+    levels: [
+      { produkty: [{ produkt: "švestky", pocet: 4, nazev: "Švestky" }], obt: "easy" },
+      { produkty: [{ produkt: "švestky", pocet: 14, nazev: "Švestky" }], obt: "hard" },
+      { produkty: [{ produkt: "hrušky", pocet: 6, nazev: "Hrušky" }], obt: "easy" },
+      { produkty: [{ produkt: "hrušky", pocet: 16, nazev: "Hrušky" }], obt: "hard" },
+      { produkty: [{ produkt: "broskve", pocet: 5, nazev: "Broskve" }], obt: "easy" },
+      { produkty: [{ produkt: "broskve", pocet: 12, nazev: "Broskve" }], obt: "hard" },
+      { produkty: [{ produkt: "meruňky", pocet: 4, nazev: "Meruňky" }], obt: "easy" },
+      { produkty: [{ produkt: "meruňky", pocet: 14, nazev: "Meruňky" }], obt: "hard" }
+    ]
+  },
+  {
+    emoji: "🌾",
+    name: "Pekař",
+    desc: "Potřebuje suroviny na pečení.",
+    levels: [
+      { produkty: [{ produkt: "pšenice", pocet: 8, nazev: "Pšenice" }], obt: "easy" },
+      { produkty: [{ produkt: "chmel", pocet: 8, nazev: "Chmel" }], obt: "easy" },
+      { produkty: [{ produkt: "reva", pocet: 5, nazev: "Réva" }], obt: "easy" }
+    ]
+  },
+
+  {
+    emoji: "🌽",
+    name: "Popkornář Pepa",
+    desc: "Chce kukuřici na výrobu domácího popcornu do kina.",
+    levels: [
+      { produkty: [{ produkt: "kukuřice", pocet: 6, nazev: "Kukuřice" }], obt: "easy" },
+      { produkty: [{ produkt: "kukuřice", pocet: 10, nazev: "Kukuřice" }], obt: "medium" },
+      { produkty: [{ produkt: "kukuřice", pocet: 15, nazev: "Kukuřice" }], obt: "hard" },
+      { produkty: [{ produkt: "kukuřice", pocet: 25, nazev: "Kukuřice" }], obt: "extreme" }
+    ]
+  },
+  {
+    emoji: "🥕",
+    name: "Králík Bobek",
+    desc: "Mlsný králík chce zásobu čerstvé mrkve na zimu.",
+    levels: [
+      { produkty: [{ produkt: "mrkev", pocet: 5, nazev: "Mrkev" }], obt: "easy" },
+      { produkty: [{ produkt: "mrkev", pocet: 9, nazev: "Mrkev" }], obt: "medium" },
+      { produkty: [{ produkt: "mrkev", pocet: 14, nazev: "Mrkev" }], obt: "hard" },
+      { produkty: [{ produkt: "mrkev", pocet: 20, nazev: "Mrkev" }], obt: "extreme" }
+    ]
+  },
+  {
+    emoji: "🥔",
+    name: "Fritérka Jarka",
+    desc: "Potřebuje brambory do své nonstop smažírny hranolek.",
+    levels: [
+      { produkty: [{ produkt: "brambora", pocet: 5, nazev: "Brambory" }], obt: "easy" },
+      { produkty: [{ produkt: "brambora", pocet: 10, nazev: "Brambory" }], obt: "medium" },
+      { produkty: [{ produkt: "brambora", pocet: 16, nazev: "Brambory" }], obt: "hard" },
+      { produkty: [{ produkt: "brambora", pocet: 25, nazev: "Brambory" }], obt: "extreme" }
+    ]
+  },
+  {
+    emoji: "🍅",
+    name: "Ital Toni",
+    desc: "Chystá velkou pizzovou fiestu a shání rajčata.",
+    levels: [
+      { produkty: [{ produkt: "rajčata", pocet: 4, nazev: "Rajčata" }], obt: "easy" },
+      { produkty: [{ produkt: "rajčata", pocet: 8, nazev: "Rajčata" }], obt: "medium" },
+      { produkty: [{ produkt: "rajčata", pocet: 14, nazev: "Rajčata" }], obt: "hard" },
+      { produkty: [{ produkt: "rajčata", pocet: 22, nazev: "Rajčata" }], obt: "extreme" }
+    ]
+  },
+  {
+    emoji: "🌶",
+    name: "Pekelník Lojza",
+    desc: "Vaří pekelnou omáčku, potřebuje extra chilli.",
+    levels: [
+      { produkty: [{ produkt: "chilli", pocet: 3, nazev: "Chilli" }], obt: "easy" },
+      { produkty: [{ produkt: "chilli", pocet: 6, nazev: "Chilli" }], obt: "medium" },
+      { produkty: [{ produkt: "chilli", pocet: 10, nazev: "Chilli" }], obt: "hard" },
+      { produkty: [{ produkt: "chilli", pocet: 18, nazev: "Chilli" }], obt: "extreme" }
+    ]
+  },
+  {
+    emoji: "🥒",
+    name: "Zavařovačka Miluška",
+    desc: "Dělá okurkové čalamády a potřebuje zásoby.",
+    levels: [
+      { produkty: [{ produkt: "okurky", pocet: 5, nazev: "Okurky" }], obt: "easy" },
+      { produkty: [{ produkt: "okurky", pocet: 9, nazev: "Okurky" }], obt: "medium" },
+      { produkty: [{ produkt: "okurky", pocet: 14, nazev: "Okurky" }], obt: "hard" },
+      { produkty: [{ produkt: "okurky", pocet: 21, nazev: "Okurky" }], obt: "extreme" }
+    ]
+  },
+  {
+    emoji: "🍰",
+    name: "Cukrář Roman",
+    desc: "Připravuje třešňové koláče pro celou svatbu.",
+    levels: [
+      { produkty: [{ produkt: "třešně", pocet: 4, nazev: "Třešně" }], obt: "easy" },
+      { produkty: [{ produkt: "třešně", pocet: 8, nazev: "Třešně" }], obt: "medium" },
+      { produkty: [{ produkt: "třešně", pocet: 12, nazev: "Třešně" }], obt: "hard" },
+      { produkty: [{ produkt: "třešně", pocet: 20, nazev: "Třešně" }], obt: "extreme" }
+    ]
+  },
+  {
+    emoji: "🧅",
+    name: "Polévkářka Božka",
+    desc: "Vaří cibulačku pro celé JZD, potřebuje cibuli.",
+    levels: [
+      { produkty: [{ produkt: "cibule", pocet: 6, nazev: "Cibule" }], obt: "easy" },
+      { produkty: [{ produkt: "cibule", pocet: 10, nazev: "Cibule" }], obt: "medium" },
+      { produkty: [{ produkt: "cibule", pocet: 15, nazev: "Cibule" }], obt: "hard" },
+      { produkty: [{ produkt: "cibule", pocet: 22, nazev: "Cibule" }], obt: "extreme" }
+    ]
+  },
+  {
+    emoji: "🧄",
+    name: "Upírolog Emil",
+    desc: "Shání česnek do zásoby, prý pro jistotu.",
+    levels: [
+      { produkty: [{ produkt: "česnek", pocet: 3, nazev: "Česnek" }], obt: "easy" },
+      { produkty: [{ produkt: "česnek", pocet: 7, nazev: "Česnek" }], obt: "medium" },
+      { produkty: [{ produkt: "česnek", pocet: 12, nazev: "Česnek" }], obt: "hard" },
+      { produkty: [{ produkt: "česnek", pocet: 18, nazev: "Česnek" }], obt: "extreme" }
+    ]
+  },
+  {
+    emoji: "🍓",
+    name: "Dezertérka Lenka",
+    desc: "Peče jahodové dorty na dětskou oslavu.",
+    levels: [
+      { produkty: [{ produkt: "jahody", pocet: 5, nazev: "Jahody" }], obt: "easy" },
+      { produkty: [{ produkt: "jahody", pocet: 9, nazev: "Jahody" }], obt: "medium" },
+      { produkty: [{ produkt: "jahody", pocet: 14, nazev: "Jahody" }], obt: "hard" },
+      { produkty: [{ produkt: "jahody", pocet: 20, nazev: "Jahody" }], obt: "extreme" }
+    ]
+  },
+ {
+  emoji: "🧓",
+  name: "Babička Růža",
+  desc: "Pecce štrúdly pro celý domov důchodců.",
+  levels: [
+    { produkty: [{ produkt: "hrušky", pocet: 6, nazev: "Hrušky" }], obt: "easy" },
+    { produkty: [{ produkt: "jablko", pocet: 8, nazev: "Jablka" }], obt: "medium" },
+    { produkty: [{ produkt: "hrušky", pocet: 10, nazev: "Hrušky" }, { produkt: "pšenice", pocet: 8, nazev: "Pšenice" }], obt: "hard" },
+    { produkty: [{ produkt: "kukuřice", pocet: 10, nazev: "Kukuřice" }, { produkt: "jablko", pocet: 10, nazev: "Jablka" }], obt: "extreme" }
+  ]
+},
+{
+  emoji: "🍿",
+  name: "Kino Promítač Lojzík",
+  desc: "Chce zásobu popcornu a limonády pro večerní promítání.",
+  levels: [
+    { produkty: [{ produkt: "kukuřice", pocet: 5, nazev: "Kukuřice" }], obt: "easy" },
+    { produkty: [{ produkt: "kukuřice", pocet: 10, nazev: "Kukuřice" }, { produkt: "reva", pocet: 6, nazev: "Réva" }], obt: "medium" },
+    { produkty: [{ produkt: "kukuřice", pocet: 15, nazev: "Kukuřice" }, { produkt: "meruňky", pocet: 8, nazev: "Meruňky" }], obt: "hard" },
+    { produkty: [{ produkt: "kukuřice", pocet: 20, nazev: "Kukuřice" }, { produkt: "reva", pocet: 12, nazev: "Réva" }], obt: "extreme" }
+  ]
+},
+{
+  emoji: "🧑‍🎤",
+  name: "Festivalový šéf",
+  desc: "Chce jídlo i pití na třídenní open air akci.",
+  levels: [
+    { produkty: [{ produkt: "pšenice", pocet: 10, nazev: "Pšenice" }], obt: "easy" },
+    { produkty: [{ produkt: "kvas_pivo", pocet: 8, nazev: "Kvas na pivo" }, { produkt: "kvas_švestky", pocet: 6, nazev: "Švestkový kvas" }], obt: "medium" },
+    { produkty: [{ produkt: "kvas_hrušky", pocet: 8, nazev: "Hruškový kvas" }, { produkt: "kukuřice", pocet: 12, nazev: "Kukuřice" }], obt: "hard" },
+    { produkty: [{ produkt: "kvas_meruňky", pocet: 10, nazev: "Meruňkový kvas" }, { produkt: "kvas_broskve", pocet: 10, nazev: "Broskvový kvas" }, { produkt: "kukuřice", pocet: 15, nazev: "Kukuřice" }], obt: "extreme" }
+  ]
+},
+ 
+{
+    emoji: "🔥",
+    name: "Palič",
+    desc: "Shání kvasy na pálenku různých druhů.",
+    levels: [
+      { produkty: [{ produkt: "kvas_švestky", pocet: 8, nazev: "Švestkový kvas" }], obt: "medium" },
+      { produkty: [{ produkt: "kvas_broskve", pocet: 8, nazev: "Broskvový kvas" }], obt: "medium" },
+      { produkty: [{ produkt: "kvas_hrušky", pocet: 8, nazev: "Hruškový kvas" }], obt: "medium" },
+      { produkty: [{ produkt: "kvas_meruňky", pocet: 8, nazev: "Meruňkový kvas" }], obt: "medium" }
+    ]
+  },
+  {
+    emoji: "🥧",
+    name: "Cukrářka Božka",
+    desc: "Chce ovoce na letní koláče a dorty pro celou vesnici.",
+    levels: [
+      { produkty: [{ produkt: "broskve", pocet: 3, nazev: "Broskve" }, { produkt: "meruňky", pocet: 2, nazev: "Meruňky" }], obt: "easy" },
+      { produkty: [{ produkt: "broskve", pocet: 5, nazev: "Broskve" }, { produkt: "meruňky", pocet: 6, nazev: "Meruňky" }], obt: "medium" },
+      { produkty: [{ produkt: "hrušky", pocet: 12, nazev: "Hrušky" }, { produkt: "švestky", pocet: 12, nazev: "Švestky" }], obt: "hard" }
+    ]
+  },
+  {
+    emoji: "👩‍🌾",
+    name: "Biofarma",
+    desc: "Biozákazník chce lokální suroviny do svého boxu.",
+    levels: [
+     { produkty: [{ produkt: "pšenice", pocet: 8, nazev: "Pšenice" }, { produkt: "chmel", pocet: 5, nazev: "Chmel" }, { produkt: "reva", pocet: 3, nazev: "Réva" }], obt: "easy" },   
+     { produkty: [{ produkt: "pšenice", pocet: 15, nazev: "Pšenice" }, { produkt: "chmel", pocet: 10, nazev: "Chmel" }, { produkt: "reva", pocet: 8, nazev: "Réva" }], obt: "hard" }
+    ]
+  },
+  {
+    emoji: "👨‍🔬",
+    name: "Alchymista",
+    desc: "Kupuje kvasy na svoje lektvary, ať to bublá.",
+    levels: [
+      { produkty: [{ produkt: "kvas_švestky", pocet: 5, nazev: "Švestkový kvas" }, { produkt: "kvas_broskve", pocet: 5, nazev: "Broskvový kvas" }], obt: "medium" }
+    ]
+  },
+  {
+    emoji: "🥨",
+    name: "Stánkař na pouti",
+    desc: "Poptává broskve, meruňky a trochu pšenice do pochoutek.",
+    levels: [
+      { produkty: [{ produkt: "broskve", pocet: 8, nazev: "Broskve" }, { produkt: "meruňky", pocet: 8, nazev: "Meruňky" }, { produkt: "pšenice", pocet: 8, nazev: "Pšenice" }], obt: "medium" }
+    ]
+  },
+  {
+    emoji: "🍹",
+    name: "Letní bar",
+    desc: "Shání ovoce a kvasy na domácí limonády a koktejly.",
+    levels: [
+      { produkty: [{ produkt: "hrušky", pocet: 7, nazev: "Hrušky" }, { produkt: "kvas_hrušky", pocet: 4, nazev: "Hruškový kvas" }], obt: "medium" }
+    ]
+  },
+  {
+    emoji: "🎊",
+    name: "Obecní úřad",
+    desc: "Objednává reálnou zásobu pro vesnickou slavnost.",
+    levels: [
+      { produkty: [{ produkt: "pšenice", pocet: 25, nazev: "Pšenice" }, { produkt: "švestky", pocet: 15, nazev: "Švestky" }, { produkt: "most_vino", pocet: 6, nazev: "Vinný mošt" }], obt: "hard" }
+    ]
+  },
+  {
+    emoji: "🧑‍🍳",
+    name: "Šéfkuchař z restaurace",
+    desc: "Ovoce a kvasy do sezónního menu.",
+    levels: [
+      { produkty: [{ produkt: "meruňky", pocet: 6, nazev: "Meruňky" }, { produkt: "kvas_meruňky", pocet: 4, nazev: "Meruňkový kvas" }, { produkt: "chmel", pocet: 7, nazev: "Chmel" }], obt: "medium" }
+    ]
+  },
+ 
+{
+  emoji: "🚜",
+  name: "Traktorista Lojza",
+  desc: "Potřebuje něco na zub i do nádrže (legálně, samozřejmě).",
+  levels: [
+    { produkty: [{ produkt: "kvas_švestky", pocet: 6, nazev: "Švestkový kvas" }, { produkt: "chmel", pocet: 10, nazev: "Chmel" }], obt: "medium" }
+  ]
+},
+{
+  emoji: "🧃",
+  name: "Dětský tábor",
+  desc: "Shání ovoce na šťávy pro malý táborníky.",
+  levels: [
+    { produkty: [{ produkt: "reva", pocet: 12, nazev: "Réva" }, { produkt: "meruňky", pocet: 10, nazev: "Meruňky" }], obt: "easy" }
+  ]
+},
+{
+  emoji: "🧔",
+  name: "Samorost z lesa",
+  desc: "Občas přijde, zamumlá a odnese si kvas. Neřeš.",
+  levels: [
+    { produkty: [{ produkt: "kvas_hrušky", pocet: 6, nazev: "Hruškový kvas" }, { produkt: "kvas_meruňky", pocet: 6, nazev: "Meruňkový kvas" }], obt: "medium" }
+  ]
+},
+{
+    emoji: "🦉",
+    name: "Noční výkupčí",
+    desc: "Bere všechno, hlavně ať je toho dost.",
+    levels: [
+      { produkty: [
+        { produkt: "broskve", pocet: 12, nazev: "Broskve" },
+        { produkt: "švestky", pocet: 12, nazev: "Švestky" },
+        { produkt: "kvas_broskve", pocet: 7, nazev: "Broskvový kvas" }
+      ], obt: "hard" }
+    ]
+  }
+];
+
+// ------- CENÍK PRODUKTŮ ----------
+var prices = {
+   pšenice: 7, chmel: 9, kukuřice: 12, reva: 12, broskve: 20, meruňky: 18, jablko: 13, hrušky: 13, švestky: 13, mrkev: 9, brambora: 11,  rajčata: 12, chilli: 15, okurky: 13,
+      cibule: 14, česnek: 16, jahody: 25, třešně: 15,
+      kvas_pivo: 18, most_vino: 45,
+      kvas_švestky: 17, kvas_hrušky: 15, kvas_meruňky: 18, kvas_broskve: 19,
+      pivo: 32, vino: 60, popkorn: 50,
+      palenka_švestky: 46, palenka_hrušky: 44, palenka_meruňky: 48, palenka_broskve: 50
+};
+// ---------------------------------
+
+function generujHosta() {
+  var typ = MARKET_TYPES[Math.floor(Math.random() * MARKET_TYPES.length)];
+  var level = typ.levels[Math.floor(Math.random() * typ.levels.length)];
+  return {
+    emoji: typ.emoji,
+    name: typ.name,
+    desc: typ.desc,
+    order: level.produkty,
+    obt: level.obt
+  };
+}
+
+var MAX_HOSTU = 3;
+
+function ulozHosty() {
+  localStorage.setItem("lihobaronMarketHosti", JSON.stringify(aktHosti));
+}
+function nactiHosty() {
+  var hosti = localStorage.getItem("lihobaronMarketHosti");
+  if (hosti) return JSON.parse(hosti);
+  var arr = [];
+  for (var i = 0; i < MAX_HOSTU; i++) arr.push(generujHosta());
+  localStorage.setItem("lihobaronMarketHosti", JSON.stringify(arr));
+  return arr;
+}
+
+var aktHosti = nactiHosty();
+
+function getSklad() {
+  return JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
+}
+function getPrachy() {
+  return Number(localStorage.getItem("lihobaronFarmCoins") || 0);
+}
+function setPrachy(kolik) {
+  localStorage.setItem("lihobaronFarmCoins", kolik);
+}
+function setSklad(obj) {
+  localStorage.setItem("lihobaronFarmStorage", JSON.stringify(obj));
+}
+
+function vypocetOdmeny(order) {
+  var hodnota = 0;
+  for (var i = 0; i < order.length; i++) {
+    var klic = order[i].produkt;
+    hodnota += (prices[klic] || 0) * order[i].pocet;
+  }
+  return Math.round(hodnota * 1.15);
+}
+
+function renderPubCards() {
+  var html = "";
+  for (var idx = 0; idx < aktHosti.length; idx++) {
+    var host = aktHosti[idx];
+    var sklad = getSklad();
+    var dost = true;
+    var produkty = "";
+    var odmena = vypocetOdmeny(host.order);
+
+    for (var j = 0; j < host.order.length; j++) {
+      var zak = host.order[j];
+      var skladPocet = sklad[zak.produkt] || 0;
+      if (skladPocet < zak.pocet) dost = false;
+      produkty += "<li>" + zak.nazev + ": <b>" + skladPocet + "</b> / <b>" + zak.pocet + "</b></li>";
+    }
+    html +=
+      '<div class="pub-card" id="host' + idx + '">' +
+        '<div class="header"><div class="img">' + host.emoji + '</div>' +
+          '<div><b>' + host.name + '</b> <span style="font-size:0.85em;color:#2989c5;">(' + host.obt + ')</span></div>' +
+        '</div>' +
+        '<div class="desc">' + host.desc + '</div>' +
+        '<ul style="margin-left:10px;">' + produkty + '</ul>' +
+        '<div class="odmena" style="margin:8px 0;font-size:1.1em;"><b>Odměna: ' + odmena + ' Kč</b></div>' +
+        '<div class="btn-row">' +
+          '<button onclick="splnitZakazku(' + idx + ')" ' + (dost ? "" : "disabled") + '>Splnit zakázku</button>' +
+          '<button class="reject" onclick="vyhoditHosta(' + idx + ')">Vyhodit hosta</button>' +
+        '</div>' +
+        '<div id="alert' + idx + '"></div>' +
+      '</div>';
+  }
+  document.getElementById("pubCards").innerHTML = html;
+}
+
+// Splnění zakázky
+window.splnitZakazku = function(idx) {
+  var host = aktHosti[idx];
+  var sklad = getSklad();
+  var dost = true;
+  for (var j = 0; j < host.order.length; j++) {
+    var zak = host.order[j];
+    if ((sklad[zak.produkt] || 0) < zak.pocet) {
+      dost = false;
+      break;
+    }
+  }
+  var odmena = vypocetOdmeny(host.order);
+  if (dost) {
+    for (var j = 0; j < host.order.length; j++) {
+      var zak = host.order[j];
+      sklad[zak.produkt] = (sklad[zak.produkt] || 0) - zak.pocet;
+    }
+    setSklad(sklad);
+    var prachy = getPrachy() + odmena;
+    setPrachy(prachy);
+    document.getElementById("alert" + idx).innerHTML =
+      '<div class="done"><span class="icon">✅</span> Zakázka splněna! +' + odmena + ' Kč</div>';
+    setTimeout(function() { vyhoditHosta(idx, true); }, 1100);
+  } else {
+    var chybi = [];
+    for (var j = 0; j < host.order.length; j++) {
+      var zak = host.order[j];
+      if ((sklad[zak.produkt] || 0) < zak.pocet) {
+        chybi.push(zak.nazev + " (" + (zak.pocet - (sklad[zak.produkt] || 0)) + ")");
+      }
+    }
+    document.getElementById("alert" + idx).innerHTML =
+      '<div class="alert"><span class="icon">❗</span> Chybí: ' + chybi.join(", ") + '</div>';
+  }
+};
+
+// Vyhození hosta = vygeneruj nového (náhodný typ + obtížnost)
+window.vyhoditHosta = function(idx, splneno) {
+  aktHosti[idx] = generujHosta();
+  ulozHosty();
+  renderPubCards();
+};
+
+// Na konci spustit render!
+renderPubCards();
+window.addEventListener("storage", function(e) {
+  if (e.key === "lihobaronFarmStorage") renderPubCards();
+});
+document.addEventListener("visibilitychange", function() {
+  if (!document.hidden) renderPubCards();
+});
+
+</script>
+</body>
+</html>
