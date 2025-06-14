@@ -97,23 +97,23 @@ var krmInterval = 1 * 60 * 60 * 1000; // 1 hodina
 var animalDefs = {
   slepice: { emoji: "🐔", jmeno: "Slepice", cena: 100, produkty: [
     { typ: "vejce", interval: 1 * 60 * 60 * 1000 },
-    { typ: "hnůj", interval: 12 * 60 * 60 * 1000 }
+    { typ: "hnůj", interval: 24 * 60 * 60 * 1000 }
   ]},
   krocan: { emoji: "🦃", jmeno: "Krocan", cena: 200, produkty: [
     { typ: "krůtí maso", interval: 2 * 60 * 60 * 1000 },
-    { typ: "hnůj", interval: 12 * 60 * 60 * 1000 }
+    { typ: "hnůj", interval: 24 * 60 * 60 * 1000 }
   ]},
   prase: { emoji: "🐷", jmeno: "Prase", cena: 500, produkty: [
     { typ: "šunka", interval: 3 * 60 * 60 * 1000 },
-    { typ: "hnůj", interval: 12 * 60 * 60 * 1000 }
+    { typ: "hnůj", interval: 24 * 60 * 60 * 1000 }
   ]},
   koza: { emoji: "🐐", jmeno: "Koza", cena: 700, produkty: [
     { typ: "kozí mléko", interval: 3 * 60 * 60 * 1000 },
-    { typ: "hnůj", interval: 12 * 60 * 60 * 1000 }
+    { typ: "hnůj", interval: 24 * 60 * 60 * 1000 }
   ]},
   krava: { emoji: "🐮", jmeno: "Kráva", cena: 1000, produkty: [
     { typ: "mléko", interval: 5 * 60 * 60 * 1000 },
-    { typ: "hnůj", interval: 12 * 60 * 60 * 1000 }
+    { typ: "hnůj", interval: 23 * 60 * 60 * 1000 }
   ]}
 };
 
@@ -175,7 +175,7 @@ function formatTime(ms) {
 function krmeniLoop() {
   var now = Date.now();
   var changed = false;
-  var hnujLimit = 12 * 60 * 60 * 1000; // 12 hodin limit pro neodklizený hnůj
+  var hnujLimit = 24 * 60 * 60 * 1000; // 24 hodin limit pro neodklizený hnůj
 
   animals.forEach(function(zvire) {
     if (zvire.mrtve) return;
