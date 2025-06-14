@@ -248,7 +248,7 @@ function renderAnimals() {
       });
       html += '</div>';
       html += '<div class="tlacitka">' +
-        '<button onclick="sklidit(' + idx + ')">Sklidit</button>' +
+        '<button onclick="sklidit(' + idx + ')">Sebrat</button>' +
         '<button onclick="odklidit(' + idx + ')">Odklidit hnůj</button>' +
         '</div>';
     } else {
@@ -287,9 +287,9 @@ function sklidit(idx) {
     }
   });
   if (necoSklizeno) {
-    alert("Sklizeno!");
+    alert("Sebráno!");
   } else {
-    alert("Toto nemůžeš ještě udělat!");
+    alert("Produkce není hotová!");
   }
   localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
   saveAnimals();
