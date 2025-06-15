@@ -1,0 +1,230 @@
+<!DOCTYPE html><html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drunk - Punk</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" sizes="192x192" href="/icons/icon-192.png">
+<link rel="icon" sizes="512x512" href="/icons/icon-512.png">
+<meta name="theme-color" content="#208278">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #fffbe6 0%, #e1d9c5 100%);
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .reset-link {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 0.9em;
+            color: #777;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .title {
+            font-size: 2.5em;
+            margin-top: 30px;
+            letter-spacing: 2px;
+            color: #593e2c;
+            text-shadow: 0 2px 8px #f3e0b9;
+        }
+        .subtitle {
+            margin-top: 5px;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            color: #917a53;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .cards {
+            display: flex;
+            justify-content: center;
+            gap: 35px;
+            flex-wrap: wrap;
+        }
+        .card {
+            width: 220px;
+            border-radius: 18px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.09), 0 1.5px 5px rgba(0,0,0,0.07);
+            padding: 32px 16px 24px 16px;
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            font-size: 1.18em;
+            margin-bottom: 40px;
+        }
+        .card:hover {
+            transform: translateY(-8px) scale(1.06);
+            box-shadow: 0 18px 36px rgba(0,0,0,0.18), 0 2.5px 10px rgba(0,0,0,0.11);
+        }
+        .pestovani {
+            background: linear-gradient(135deg, #7bb661 0%, #a0e370 100%);
+        }
+        .vyroba {
+            background: linear-gradient(135deg, #d28f49 0%, #f4a261 100%);
+        }
+         .jzd {
+              background: linear-gradient(135deg, #a1c95a 0%, #e8e658 100%);
+        }
+
+        .finance {
+            background: linear-gradient(135deg, #27787a 0%, #3ec6b5 100%);
+        }
+        .sklad {
+            background: linear-gradient(135deg, #6e44ff 0%, #b892ff 100%);
+        }
+        .card-emoji {
+            font-size: 3em;
+            margin-bottom: 14px;
+            text-shadow: 0 3px 8px rgba(50,30,10,0.18);
+        }
+        .card-title {
+            font-size: 1.25em;
+            font-weight: bold;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+        .card.hospoda {
+  background: #195529 !important;   /* zelená hospodská */
+  border: 2px solid #e1ffab;
+}
+.card.hotel {
+  background: #203669 !important;   /* modrý hotel */
+  border: 2px solid #bee7ff;
+}
+.card.market {
+  background: #69204c !important;   /* růžový trh */
+  border: 2px solid #bee7ff;
+}
+        
+        .card-desc {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+/* Vlož do hlavního <style>, nebo klidně takhle nahoře */
+.okurka-help-row {
+  position: absolute;
+  top: 15px;
+  left: 22px;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  font-size: 1.17em;
+  font-weight: bold;
+  color: #226e29;
+}
+.okurka-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-left: 13px;
+  background: #fffbe6;
+  border: 2px solid #d4a939;
+  border-radius: 8px;
+  box-shadow: 0 2px 7px #c0ab6e55;
+  font-size: 1.45em;
+  font-weight: bold;
+  color: #b17f05;
+  text-decoration: none;
+  transition: background 0.18s, box-shadow 0.13s, border-color 0.13s;
+  cursor: pointer;
+}
+.okurka-btn:hover {
+  background: #ffedbb;
+  border-color: #f1b000;
+  box-shadow: 0 4px 12px #f1d97d99;
+}
+@media (max-width:600px) {
+  .okurka-help-row {
+    flex-direction: column;
+    align-items: flex-start;
+    top: 8px !important;
+    left: 8px !important;
+    font-size: 1.07em !important;
+  }
+  .okurka-btn {
+    margin: 6px 0 0 0 !important;
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 1.48em !important;
+  }
+}
+</style>
+
+<div class="okurka-help-row">
+  Když si okurka tak se mrkni sem:
+  <a href="napoveda.html" title="Nápověda" class="okurka-btn">❓</a>
+</div>
+<div class="reset-link" onclick="resetGame()" style="font-weight: bold;">🔄 Reset hry</div>
+<div style="position: absolute; top: 40px; right: 20px; font-size: 0.85em; color: #555; font-weight: bold;">
+  🕵 Návštěvnost sledujeme
+</div>
+
+    <div class="title" style="margin-top: 80px;">🍺🥃 Drunk - Punk</div>
+
+    <div class="subtitle">Simulátor pěstování, výroby a boje s trhem… Jsi pán lihovin i piva?</div><div class="cards">
+    <div class="card pestovani" onclick="window.location.href='pestovani.html'">
+        <div class="card-emoji">🌾🍇</div>
+        <div class="card-title">Pěstování</div>
+        <div class="card-desc">Chmelnice, pole (pšenice, brambory, třtina), ovocné sady (švestky, hrušky…)</div>
+    </div>
+    <div class="card vyroba" onclick="window.location.href='vyroba.html'">
+        <div class="card-emoji">⚗️🍻</div>
+        <div class="card-title">Výroba</div>
+        <div class="card-desc">Vaření piva, kvašení, pálení, tanky a pálenice</div>
+    </div>
+   <div class="card jzd" onclick="window.location.href='jzd.html'">
+  <div class="card-emoji">🐮</div>
+  <div class="card-title">JZD</div>
+  <div class="card-desc">Chov zvířat, hnůj, mléko, vejce, maso… Nakupuj a krm, ať ti nezhebne kráva!</div>
+   </div>
+
+    <div class="card finance" onclick="window.location.href='finance.html'">
+        <div class="card-emoji">💰📈</div>
+        <div class="card-title">Finance</div>
+        <div class="card-desc">Zisky, investice, výdaje, tržní trendy, správný byznys!</div>
+    </div>
+    <div class="card sklad" onclick="window.location.href='sklad.html'">
+        <div class="card-emoji">📦🧺</div>
+        <div class="card-title">Sklad</div>
+        <div class="card-desc">Semena, sklizené suroviny, vyrobené produkty – všechno na jednom místě.</div>
+    </div>
+<div class="card hospoda" onclick="window.location.href='pub.html'">
+  <div class="card-emoji">🍺</div>
+  <div class="card-title">Hospoda</div>
+  <div class="card-desc">Objednávky hostů, páteční akce, zásobuj a vydělávej!</div>
+</div>
+
+<div class="card hotel" onclick="window.location.href='hotel.html'">
+  <div class="card-emoji">🏨</div>
+  <div class="card-title">Hotel</div>
+  <div class="card-desc">Svatby, firemní večírky, mega objednávky – jen pro zkušené lihovarníky!</div>
+</div>
+<div class="card market" onclick="window.location.href='market.html'">
+  <div class="card-emoji">🏪</div>
+  <div class="card-title">Tržnice</div>
+  <div class="card-desc">Objednávky zákazníků, prodej zboží, zásobuj a prodávej!</div>
+</div>
+
+</div>
+
+<script>
+    function resetGame() {
+        if (confirm("Opravdu chceš resetovat hru? Všechna data budou smazána.")) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+</script>
+
+</body>
+</html>
