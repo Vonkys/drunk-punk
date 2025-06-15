@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8"/>
+  <title>Pivovar – Výroba</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #e1fcff 0%, #fef6fa 100%);
+      margin: 0; padding: 0; text-align: center;
+    }
+    .nav-bar {
+      position: fixed;
+      top: 0; left: 0; width: 100vw;
+      background: #2196f3; color: white;
+      display: flex; justify-content: flex-end; gap: 2px;
+      z-index: 1000; box-shadow: 0 2px 8px #0002; padding: 7px 0;
+    }
+    .nav-link {
+      color: white; padding: 7px 24px; text-decoration: none;
+      font-weight: bold; font-size: 1.07em; border-radius: 0 0 10px 10px;
+      transition: background 0.18s; display: flex; align-items: center; gap: 6px;
+    }
+    .nav-link.active, .nav-link:hover { background: #1760a3; }
+    body { padding-top: 48px; }
+    .zpet-link {
+      display: inline-block;
+      margin: 20px 0 4px 0;
+      color: #1760a3;
+      background: #e9f6fd;
+      padding: 7px 17px;
+      border-radius: 9px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.08em;
+      box-shadow: 0 1px 8px #bbe8fd44;
+      transition: background 0.13s, color 0.13s;
+    }
+    .zpet-link:hover { background: #b7e0ed; color: #124061; }
+    h2 { margin: 16px 0 7px 0; color: #208278; font-size: 2.35em;}
+    .section {
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 2px 14px #b7d9db35;
+      display: inline-block;
+      margin: 14px auto 0 auto;
+      padding: 16px 17px 13px 17px;
+      min-width: 220px; max-width: 98vw; text-align: left;
+    }
+    .section-title { color: #217c5e; font-size: 1.13em; margin-bottom: 8px; font-weight: 700; letter-spacing: 1px; }
+    .status { color:#b24b4b; font-weight:600; margin-bottom:10px;}
+    .success { color:#217c5e; }
+    .prod-btn {
+      background: #37af7b; color: #fff; border: none;
+      border-radius: 7px; font-size: 1em; margin: 6px 0 10px 0;
+      padding: 5px 20px; cursor: pointer;
+    }
+    .prod-btn:hover { background: #136652; }
+    .prod-btn[disabled] { background: #9dbdae; cursor: not-allowed;}
+    .timer { color:#b48525; font-size:1.09em; font-weight:600; }
+    .machines-list {margin-bottom:14px;}
+    .machines-list span {background:#e9dcb4;border-radius:7px;padding:5px 14px 4px 11px;font-size:1em;margin:0 7px 5px 0;display:inline-block;}
+    .need {color:#b24b4b;}
+    .has {color:#217c5e;}
+    .progress-container {
+      width: 100%;
+      background-color: #e0e0e0;
+      border-radius: 8px;
+      height: 12px;
+      margin-top: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background-color: #37af7b;
+      width: 0%;
+      transition: width 1s linear;
+    }
+    .progress-text {
+      font-size: 0.97em;
+      margin-top: 6px;
+      color: #555;
+      font-weight: bold;
+      text-align: center;
+    }
+    @media (max-width:600px){
+      body { padding-top: 90px; }
+      .nav-bar { justify-content: center; flex-wrap: wrap; font-size: 0.97em; }
+      .nav-link { padding:7px 8px;font-size:1em; }
+      .section { padding:10px; }
+      h2 { font-size: 2.1em; }
+      .zpet-link { padding: 7px 6vw; font-size:1em;}
+    }
+  </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <a href="pestovani.html" class="nav-link">🌱 Pěstování</a>
+    <a href="vyroba.html" class="nav-link active">⚗️ Výroba</a>
+    <a href="jzd.html" class="nav-link">🐮 JZD</a>
+    <a href="sklad.html" class="nav-link">📦 Sklad</a>
+    <a href="finance.html" class="nav-link">💰 Finance</a>
+    <a href="hotel.html" class="nav-link">🏨 Hotel</a>
+    <a href="pub.html" class="nav-link">🏡 Hospoda</a>
+    <a href="market.html" class="nav-link">🏪 Tržnice</a>
+  </div>
+  <a href="vyroba.html" class="zpet-link">← Zpět na výrobu</a>
+  <h2>🍺 Pivovar</h2>
+  <b>💵 Zůstatek: <span id="stavPrachy"></span></b>
+  <div class="section" id="machinesSection"></div>
+  <div class="section" id="pivoSection"></div>
+  <div class="section" id="vyrobaStatus"></div>
+  <script>
+
+    // Výchozí hodnoty pokud chybí
+    if (!localStorage.getItem("lihobaronFarmStorage")) {
+      localStorage.setItem("lihobaronFarmStorage", JSON.stringify({
+        pšenice: 0, chmel: 0, kvas_pivo: 0, pivo: 0
+      }));
+    }
+    if (!localStorage.getItem("lihobaronFarmCoins")) {
+      localStorage.setItem("lihobaronFarmCoins", 200);
+    }
+    if (!localStorage.getItem("lihobaronMachines")) {
+      localStorage.setItem("lihobaronMachines", "[]");
+    }
+    if (!localStorage.getItem("lihobaronProductions")) {
+      localStorage.setItem("lihobaronProductions", "[]");
+    }
+
+    // --- Pomocné funkce ---
+    function load(key, def) { try { let d=localStorage.getItem(key); if(!d)return def; return JSON.parse(d);}catch{return def;} }
+    function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+    function getMoney() { return load("lihobaronFarmCoins", 0);}
+    function setMoney(m) { save("lihobaronFarmCoins", m);}
+    function addMoney(m) { let cur=getMoney(); setMoney(cur+m);}
+    function vypisStatus(txt,ok){ let e=document.getElementById("vyrobaStatus"); e.innerHTML="<span class='"+(ok?"success":"status")+"'>"+txt+"</span>"; setTimeout(()=>{e.innerHTML='';},2300);}
+    function getSklad() { return load("lihobaronFarmStorage", {});}
+    function setSklad(s) { save("lihobaronFarmStorage", s);}
+    function getMachines() { return load("lihobaronMachines", []);}
+    function setMachines(arr) { save("lihobaronMachines", arr);}
+    function stavPrachy() { document.getElementById("stavPrachy").innerText = getMoney()+" Kč"; }
+    function getProductions() { return load("lihobaronProductions", []);}
+    function setProductions(arr) { save("lihobaronProductions", arr); }
+
+    // Stroje pro pivovar
+    const PIVO_MACHINES = [
+      { key:"kad_pivo",   name:"Kád na pivo 🍺",    price: 700 },
+      { key:"kotel_pivo", name:"Kotel na pivo ⚱️",  price: 1100 }
+    ];
+    const PRODUCTION_TIMES = {
+      "kvasit_pivo": 185, // sekundy
+      "varit_pivo": 307
+    };
+
+    // --- Obchod se stroji ---
+    function renderMachinesShop() {
+      const machines = getMachines();
+      let money = getMoney();
+      let html = "<div class='section-title'>🛒 Obchod se stroji</div>";
+      html += "<div class='machines-list'>";
+      PIVO_MACHINES.forEach(m=>{
+        if (machines.includes(m.key)) {
+          html += `<span class='has'>${m.name} ✔️</span>`;
+        } else {
+          html += `<span class='need'>${m.name} (${m.price} Kč) 
+            <button class='prod-btn' onclick="kupitStroj('${m.key}',${m.price})">Koupit</button></span>`;
+        }
+      });
+      html += "</div>";
+      document.getElementById("machinesSection").innerHTML = html;
+    }
+    // --- Nákup stroje ---
+    function kupitStroj(key, cena) {
+      let machines = getMachines();
+      let money = getMoney();
+      if (machines.includes(key)) { vypisStatus("Stroj už máš!",0); return; }
+      if (money < cena) { alert("Nemáš dost peněz!"); return; }
+      machines.push(key);
+      setMachines(machines);
+      setMoney(money-cena);
+      vypisStatus("Stroj koupen!",1);
+      stavPrachy();
+      renderMachinesShop();
+      vykresliPivo();
+    }
+    // --- Výroba piva ---
+    function vykresliPivo() {
+      const machines = getMachines();
+      const sklad = getSklad();
+      const prods = getProductions();
+      let html = "<div class='section-title'>🧪 Výroba piva</div>";
+      // Kád na pivo (kvašení)
+      html += `<b style="font-size:1.13em;">🍺 Kád na pivo</b><br>`;
+      if (machines.includes("kad_pivo")) {
+        let psenice = sklad["pšenice"]||0, chmel = sklad["chmel"]||0;
+        let kvasPivo = sklad["kvas_pivo"]||0;
+        let prod = prods.find(p=>p.type==="kvasit_pivo" && !p.done);
+        html += `<div><b>Kvašení:</b> <span class="has">${kvasPivo}× pivní kvas</span><br>`;
+        if (prod) {
+          html += renderProgress(prod, "kvasit_pivo");
+        } else if (psenice>0 && chmel>0) {
+          html += `<button class='prod-btn' onclick="startProduction('kvasit_pivo')" id="btnKvasitPivo">Kvasit pivo (1× pšenice + 1× chmel)</button>`;
+        } else {
+          html += `<span class='need'>Chybí: ${psenice<1?"pšenice ":""}${chmel<1?"chmel":""}</span>`;
+        }
+        html += `</div><hr style="margin:8px 0 7px 0;opacity:.18;">`;
+      } else {
+        html += `<span class='need'>Nejdřív si kup káď na pivo!</span><hr style="margin:8px 0 7px 0;opacity:.18;">`;
+      }
+      // Kotel na pivo (vaření)
+      html += `<b style="font-size:1.13em;">⚱️ Kotel na pivo</b><br>`;
+      if (machines.includes("kotel_pivo")) {
+        let kvasPivo = sklad["kvas_pivo"]||0;
+        let pivo = sklad["pivo"]||0;
+        let prod = prods.find(p=>p.type==="varit_pivo" && !p.done);
+        html += `<div><b>Vaření:</b> <span class="has">${pivo}× pivo</span><br>`;
+        if (prod) {
+          html += renderProgress(prod, "varit_pivo");
+        } else if (kvasPivo>0) {
+          html += `<button class='prod-btn' onclick="startProduction('varit_pivo')" id="btnVaritPivo">Vařit pivo (1× pivní kvas)</button>`;
+        } else {
+          html += `<span class='need'>Nemáš pivní kvas!</span>`;
+        }
+        html += `</div>`;
+      } else {
+        html += `<span class='need'>Nejdřív si kup kotel na pivo!</span>`;
+      }
+      document.getElementById("pivoSection").innerHTML = html;
+      stavPrachy();
+    }
+
+    // Výrobní progress bar
+    function renderProgress(prod, typ) {
+      let secondsLeft = Math.max(0, Math.ceil((prod.started + prod.duration*1000 - Date.now())/1000));
+      let percent = Math.min(100, 100-100*secondsLeft/prod.duration);
+      let id = `prodTimer_${prod.type}`;
+      return `<div class="progress-container"><div class="progress-bar" id="pb_${id}" style="width:${percent}%"></div></div>
+              <div class="progress-text">Zbývá: <span id="${id}">${formatTime(secondsLeft)}</span></div>`;
+    }
+    function formatTime(secs) {
+      if (secs < 60) return secs + "s";
+      let min = Math.floor(secs/60);
+      let s = secs % 60;
+      return min + "m " + s + "s";
+    }
+    // Spuštění výroby
+    function startProduction(type) {
+      const sklad = getSklad();
+      let prods = getProductions();
+      if (prods.find(p=>p.type===type && !p.done)) return;
+      if (type === "kvasit_pivo" && ((sklad["pšenice"]||0)<1 || (sklad["chmel"]||0)<1)) return;
+      if (type === "varit_pivo" && ((sklad["kvas_pivo"]||0)<1)) return;
+      // Odečíst suroviny
+      if (type === "kvasit_pivo")   { sklad["pšenice"]--; sklad["chmel"]--; }
+      if (type === "varit_pivo")    { sklad["kvas_pivo"]--; }
+      setSklad(sklad);
+      prods.push({
+        type,
+        started: Date.now(),
+        duration: PRODUCTION_TIMES[type] || 20,
+        done: false
+      });
+      setProductions(prods);
+      vykresliPivo();
+      runProductionTimers();
+    }
+    // Progress bary
+    function runProductionTimers() {
+      let prods = getProductions();
+      if (!prods || !prods.length) return;
+      function tick() {
+        let now = Date.now();
+        let changed = false;
+        prods = getProductions();
+        prods.forEach((prod, idx) => {
+          if (prod.done) return;
+          let secondsLeft = Math.max(0, Math.ceil((prod.started + prod.duration*1000 - now)/1000));
+          let percent = Math.min(100, 100-100*secondsLeft/prod.duration);
+          let id = `prodTimer_${prod.type}`;
+          let timerSpan = document.getElementById(id);
+          if (timerSpan) timerSpan.textContent = formatTime(secondsLeft);
+          let bar = document.getElementById('pb_'+id);
+          if (bar) bar.style.width = percent+"%";
+          if (secondsLeft <= 0) {
+            prod.done = true; changed = true;
+            finishProduction(prod.type);
+          }
+        });
+        setProductions(prods);
+        vykresliPivo();
+        if (prods.some(p=>!p.done)) setTimeout(tick, 1000);
+      }
+      tick();
+    }
+    // Dokončení výroby
+    function finishProduction(type) {
+      let sklad = getSklad();
+      if (type === "kvasit_pivo")    sklad["kvas_pivo"] = (sklad["kvas_pivo"]||0)+1;
+      if (type === "varit_pivo")     sklad["pivo"] = (sklad["pivo"]||0)+1;
+      setSklad(sklad);
+      vypisStatus("Výroba dokončena!", 1);
+      stavPrachy();
+    }
+
+    window.onload = function() {
+      renderMachinesShop();
+      vykresliPivo();
+      stavPrachy();
+      runProductionTimers();
+    };
+  </script>
