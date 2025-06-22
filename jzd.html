@@ -316,24 +316,24 @@ function formatTime(ms) {
   var sec = s % 60;
   return h + "h " + m + "m " + sec + "s";
 }
-
 function krmeniLoop() {
   var now = Date.now();
   var changed = false;
-  var hnujLimit = 24 * 60 * 60 * 1000; // 24 hodin limit pro neodklizený hnůj
+  var hnujLimit = 24 * 60 * 60 * 1000; // 24h limit pro neodklizený hnůj
 
   var pauseUntil = parseInt(localStorage.getItem("lihobaronPauseFeedingUntil") || "0", 10);
   var feedingPaused = (pauseUntil > now);
 
   animals.forEach(function(zvire) {
     if (zvire.mrtve) return;
+
+    // Během pauzy živení - žádné odečítání pšenice, žádný dyň, čas posunout
     if (feedingPaused) {
-      // Během pauzy živení – žádné odečítání pšenice, žádný úhyn, čas posunout
       zvire.last_feed = now;
     } else {
       var feedTime = zvire.last_feed || now;
-      // kolikrát měl být nakrmen od posledního feedu?
       var feedings = Math.floor((now - feedTime) / krmInterval);
+
       if (feedings > 0) {
         for (var i = 0; i < feedings; i++) {
           if ((sklad["pšenice"] || 0) > 0) {
@@ -348,13 +348,15 @@ function krmeniLoop() {
         }
       }
     }
-    // Kontrola hnoje – pokud nebyl dlouho odklizen, zvíře chcípne
-    var lastHnuj = zvire["last_hnůj"] || zvire.last_feed || now;
+
+    // Kontrola hnoje – pokud nebyl dlouho odklizen, chcípne
+    var lastHnuj = zvire["last_hnůj"] ?? zvire["last_Crap"] ?? zvire.last_feed ?? now;
     if (now - lastHnuj > hnujLimit) {
       zvire.mrtve = true;
       changed = true;
     }
   });
+
   if (changed) {
     localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
     saveAnimals();
