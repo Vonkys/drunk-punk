@@ -580,7 +580,7 @@ function updateBoostTimer() {
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    el.textContent = `⚡ Boost active ! +4 plots for ${hours}h ${minutes}m ${seconds}s`;
+    el.textContent = `⚡ Boost active! (+4 plots) for ${hours}h ${minutes}m ${seconds}s`;
   } else {
     el.textContent = "";
     localStorage.removeItem("farmBoostUntil"); // smaž boost flag
