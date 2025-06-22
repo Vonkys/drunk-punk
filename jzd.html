@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+9<!DOCTYPE html>
 <html lang="cs">
 <head>
   <meta charset="UTF-8">
@@ -447,21 +447,22 @@ function sklidit(idx) {
   renderAnimals();
 }
 
+
 function odklidit(idx) {
   var zvire = animals[idx];
   var def = animalDefs[zvire.typ];
   var cas = Date.now();
   if (zvire.mrtve) return alert("That thing's dead");
+
   def.produkty.forEach(function(prod) {
-    if (prod.typ === "hnůj") {
+    if (prod.typ === "hnůj" || prod.typ === "Crap") {
       zvire['last_' + prod.typ] = cas;
     }
   });
-  
+
   saveAnimals();
   renderAnimals();
 }
-
 let hnojTimer = 60;
 let hnojScore = 0;
 let kosElement = null;
