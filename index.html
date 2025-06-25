@@ -202,7 +202,7 @@
 
   async function verifyUserOnBackend(accessToken) {
   try {
-    const response = await fetch("https://backend-production-d067.up.railway.app/verify", {
+    const response = await fetch("https://backend-production-d067.up.railway.app", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
