@@ -270,7 +270,7 @@ function initDailyLogin() {
   const isNewDay = !last || last.toDateString() !== todayStr;
 
   if (data.days.length === MAX_DAYS) {
-    alert("✅ Reward unlocked! +100 PI");
+    alert("✅ Reward unlocked! +100 ϖ");
     setPi(getPi() + 100);
     data = { days: [], last: now.getTime() };
     localStorage.setItem(LOGIN_KEY, JSON.stringify(data));
