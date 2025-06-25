@@ -297,10 +297,14 @@ function vykresliMarmelady() {
   var prods = getProductions();
   var html = "";
 
+  // Nadpis sekce - vždy viditelný!
+  html += "<div class='section-title'>🍯 Jam Production</div>";
+
   if (machines.indexOf("hrnec_marmelada") === -1) {
+    // Když nemáš stroj, vypiš jen hlášku
     html += "<span class='need'>Buy a jam pot first!</span>";
   } else {
-    html += "<div class='section-title'>🍯 Jam Production</div>";
+    // Když máš stroj, zobraz celý ovládání na marmelády
     html += "<label for='marmeladySelect'><b>Pick fruit:</b></label> ";
     html += "<select id='marmeladySelect'>";
     for (var i = 0; i < MARMELADA_OVOCE.length; i++) {
