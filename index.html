@@ -201,27 +201,30 @@
   const piUserKey = "piUser";
 
   async function verifyUserOnBackend(accessToken) {
-    try {
-      const response = await fetch("https://backend-production-d067.up.railway.app/verify-user", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ accessToken: accessToken }),
-      });
+  try {
+    const response = await fetch("https://backend-production-d067.up.railway.app/verify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ accessToken: accessToken }),
+    });
 
-      const data = await response.json();
-      if (data.username) {
-        localStorage.setItem(piUserKey, data.username);
-        document.getElementById("pi-login-wrap").innerHTML = 
-          "<div style='color:#208278;font-weight:bold;'>✅ Přihlášen jako: " + data.username + "</div>";
-      } else {
-        alert("⚠ Backend nevrátil uživatele.");
-      }
-    } catch (err) {
-      alert("❌ Chyba při ověřování na serveru: " + err.message);
+    const data = await response.json();
+    console.log("✅ Backend response:", data);
+
+    if (data.username) {
+      localStorage.setItem(piUserKey, data.username);
+      document.getElementById("pi-login-wrap").innerHTML =
+        '<div style="color:#208278;font-weight:bold;">✅ Přihlášen jako: ' + data.username + "</div>";
+    } else {
+      alert("⚠️ Backend nevrátil uživatele.");
     }
+  } catch (err) {
+    console.error("❌ Chyba při ověřování na serveru:", err);
+    alert("❌ Chyba při ověřování na serveru: " + err.message);
   }
+}
 
   document.addEventListener("DOMContentLoaded", function () {
     const loginBtn = document.getElementById("btn-pi-login");
