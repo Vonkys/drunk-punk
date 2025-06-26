@@ -425,7 +425,6 @@ function renderZvirataList() {
   document.getElementById("sell-list").insertAdjacentHTML('beforeend', `<div style='margin-top:24px;'><b>🐮 Animal sales</b></div>` + html);
 }
 
-
 function showMsg(msg) {
   document.getElementById("msg").textContent = msg;
   setTimeout(function () {
@@ -442,7 +441,6 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
     var scopes = ["username", "payments"];
     var auth = await Pi.authenticate(scopes, function (payment) {
       console.log("🔁 Neúplná platba: " + JSON.stringify(payment));
-      alert("🔁 Neúplná platba zachycena");
     });
 
     if (!auth || !auth.accessToken) {
@@ -452,7 +450,6 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
     localStorage.setItem("piUser", auth.user.username);
     console.log("🔐 Uživatelské jméno:", auth.user.username);
 
-    // Verifikace accessTokenu přes backend
     var verifyRes = await fetch("https://backend-production-9cdf.up.railway.app/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -464,7 +461,6 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
     }
 
     console.log("✅ AccessToken ověřen");
-    alert("✅ AccessToken ověřen");
 
     var paymentData = {
       amount: 5,
@@ -480,8 +476,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
         if (hasApproved) return;
         hasApproved = true;
 
-        console.log("✅ Payment připraven: " + paymentId);
-        alert("✅ Payment připraven: " + paymentId);
+        console.log("✅ Payment ready: " + paymentId);
 
         fetch("https://backend-production-9cdf.up.railway.app/approve", {
           method: "POST",
@@ -493,8 +488,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
           return res.json();
         })
         .then(function (data) {
-          console.log("✅ Server approve odpověděl OK: " + JSON.stringify(data));
-          alert("✅ Server approve odpověděl OK");
+          console.log("✅ Server approved payment: " + JSON.stringify(data));
         })
         .catch(function (err) {
           console.error("❌ Server approval error: " + err.message);
@@ -506,8 +500,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
         if (hasCompleted) return;
         hasCompleted = true;
 
-        console.log("✅ Payment potvrzený (txid): " + txid);
-        alert("✅ Payment potvrzený (txid): " + txid);
+        console.log("✅ Payment confirmed: " + txid);
 
         fetch("https://backend-production-9cdf.up.railway.app/complete", {
           method: "POST",
@@ -519,11 +512,10 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
           return res.json();
         })
         .then(function (data) {
-          console.log("✅ Server completion OK: " + JSON.stringify(data));
-          alert("✅ Platba dokončena, přičítám 600 VP");
-
+          console.log("✅ Payment completed on server: " + JSON.stringify(data));
           var newBalance = getPi() + 600;
           setPi(newBalance);
+          alert("✅ 600 tokens successfully added!");
         })
         .catch(function (err) {
           console.error("❌ Completion error: " + err.message);
@@ -532,11 +524,11 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
       },
 
       onCancel: function () {
-        alert("❌ Platba zrušena uživatelem.");
+        alert("❌ Payment cancelled.");
       },
 
       onError: function (err) {
-        console.error("❌ Chyba při platbě: ", err);
+        console.error("❌ Payment error: ", err);
         alert("❌ Payment error: " + err.message);
       }
     });
@@ -549,6 +541,45 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
 
 renderSellList();
 initDailyLogin();
+
+// 💥 DEBUG TLAČÍTKO NA RUČNÍ /complete:
+var testCompleteBtn = document.createElement("button");
+testCompleteBtn.textContent = "💥 Otestuj /complete ručně";
+testCompleteBtn.style.position = "fixed";
+testCompleteBtn.style.bottom = "10px";
+testCompleteBtn.style.right = "10px";
+testCompleteBtn.style.zIndex = "9999";
+testCompleteBtn.style.background = "red";
+testCompleteBtn.style.color = "white";
+testCompleteBtn.style.border = "none";
+testCompleteBtn.style.padding = "10px";
+testCompleteBtn.style.borderRadius = "8px";
+
+testCompleteBtn.onclick = function () {
+  var fakePaymentId = prompt("Zadej paymentId (z console.log nebo backendu):");
+  if (!fakePaymentId) return;
+
+  var fakeTxid = prompt("Zadej libovolný txid (např. test123):", "test123");
+  if (!fakeTxid) return;
+
+  fetch("https://backend-production-9cdf.up.railway.app/complete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ paymentId: fakePaymentId, txid: fakeTxid })
+  })
+  .then(function (res) {
+    if (!res.ok) throw new Error("Server completion failed");
+    return res.json();
+  })
+  .then(function (data) {
+    alert("✅ Ruční /complete proběhl: " + JSON.stringify(data));
+  })
+  .catch(function (err) {
+    alert("❌ Ruční /complete chyba: " + err.message);
+  });
+};
+
+document.body.appendChild(testCompleteBtn);
 </script>
 </body>
 </html>
