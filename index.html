@@ -28,27 +28,47 @@
     }
 .header-row {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 12px;
-  margin-right: 8px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  margin-top: 8px;
+  margin-right: 12px;
+  position: relative;
+  z-index: 12;
 }
 
-@media (max-width: 600px) {
+.visit-reset-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.track-visits {
+  font-size: 0.92em;
+  color: #555;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.reset-link {
+  font-size: 1em;
+  color: #555;
+  text-decoration: underline;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media (min-width: 601px) {
   .header-row {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
-    margin-top: 4px;
-    margin-right: 3px;
-  }
-  .header-row button,
-  .header-row div,
-  .header-row a {
-    font-size: 1em !important;
-    padding: 8px 16px !important;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 14px;
+    margin-top: 14px;
+    margin-right: 30px;
   }
 }
 
@@ -158,19 +178,18 @@
 </div>
 <div class="header-row">
   <div id="pi-login-wrap">
-    <button id="btn-pi-login" style="background:#fb8c00;color:white;padding:10px 32px;font-size:1.15em;border:none;border-radius:10px;cursor:pointer;">
+    <button id="btn-pi-login" style="background:#fb8c00;color:white;padding:8px 24px;font-size:1em;border:none;border-radius:10px;cursor:pointer;">
       Login
     </button>
     <div id="pi-user-info" style="margin-top:2px;color:#208278;"></div>
   </div>
-  <div style="font-size: 0.92em; color: #555; font-weight: bold;">
-    🕵 We track visits
-  </div>
-  <div class="reset-link" onclick="resetGame()" style="font-weight: bold; position:static; margin:0;">
-    🔄 Reset game
+  <div class="visit-reset-wrap">
+    <div class="track-visits">🕵 We track visits</div>
+    <div class="reset-link" onclick="resetGame()" style="font-weight: bold;">
+      🔄 Reset game
+    </div>
   </div>
 </div>
-
 
 <b><div class="title" style="margin-top: 80px;">🍻 Drunk - Punk</div></b>
 
