@@ -17,7 +17,8 @@
     }, 100);
   });
 </script>
-  <title>Drunk - Punk</title>
+ <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<title>Drunk - Punk</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
@@ -65,7 +66,7 @@
 
   <div class="nav-bar">
    <a href="pestovani.html" class="nav-link">🌱 Grow Sh*t</a>
-<a href="vyroba.html" class="nav-link">⚗️ Brewing</a>
+<a href="vyroba.html" class="nav-link">⚗ Brewing</a>
 <a href="jzd.html" class="nav-link">🐷 Coop</a>
 <a href="sklad.html" class="nav-link">📦 Stash</a>
 <a href="finance.html" class="nav-link active">💰 Wallet</a>
@@ -164,12 +165,12 @@ const items = [
       { key: "kachní_vejce", label: "Duck egg", emoji: "🥚" },
       { key: "palenka_švestky", label: "Slivovitz", emoji: "🟣🥃" },
       { key: "palenka_hrušky",  label: "Pear brandy", emoji: "🍐🥃" },
-      { key: "palenka_jablka", label: "Calvados", emoji: "🍏🥃" },
+      { key: "palenka_jablka", label: "Calvados", emoji: "🍏🥃" },
       { key: "palenka_meruňky", label: "Apricot brandy", emoji: "🍑🥃" },
       { key: "palenka_broskve", label: "Peach brandy", emoji: "🍊🥃" },
       { key: "whiskey_kukurice", label: "Whiskey", emoji: "🥃" },
       { key: "vodka_psenice",    label: "Vodka", emoji: "🍸" },
-      { key: "rum_brambora",     label: "Rum", emoji: "🏴‍☠️" },
+      { key: "rum_brambora",     label: "Rum", emoji: "🏴‍☠" },
       // ... ostatní položky ...
       { key: "marmelada_broskve", label: "Peach jam", emoji: "🍊🍯" },
       { key: "marmelada_meruňky", label: "Apricot jam", emoji: "🍑🍯" },
@@ -326,7 +327,7 @@ function initDailyLogin() {
       const h = Math.floor(sec / 3600);
       const m = Math.floor((sec % 3600) / 60);
       const s = sec % 60;
-      timerDiv.textContent = `⏳ Next login in ${h}h ${m}m ${s}s`;
+      timerDiv.textContent = ⏳ Next login in ${h}h ${m}m ${s}s;
       setTimeout(updateCountdown, 1000);
     }
 
@@ -369,7 +370,7 @@ function sell(idx) {
   localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
   let coins = getMoney() + prices[item.key];
   setMoney(coins);
-  showMsg(`Sold 1× ${item.label} for ${prices[item.key]} $`);
+  showMsg(Sold 1× ${item.label} for ${prices[item.key]} $);
   renderSellList();
 }
 function sellAll(idx) {
@@ -381,7 +382,7 @@ function sellAll(idx) {
   localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
   let coins = getMoney() + prices[item.key]*count;
   setMoney(coins);
-  showMsg(`Sell ${count}× ${item.label} for ${prices[item.key]*count} $`);
+  showMsg(Sell ${count}× ${item.label} for ${prices[item.key]*count} $);
   renderSellList();
 }
 
@@ -399,7 +400,7 @@ function prodatZvire(typ) {
     localStorage.setItem("lihobaronZvirata", JSON.stringify(animals));
     let coins = getMoney() + animalDefs[typ].cena;
     setMoney(coins);
-    showMsg(`Sold 1× ${animalDefs[typ].nazev} za ${animalDefs[typ].cena} $`);
+    showMsg(Sold 1× ${animalDefs[typ].nazev} za ${animalDefs[typ].cena} $);
     renderSellList();
   } else {
     showMsg("No animal to sell!");
@@ -422,7 +423,7 @@ function renderZvirataList() {
     }
   });
   if (!html) html = "<div style='text-align:center;color:#aaa;margin-top:17px;'>No animals to sell!</div>";
-  document.getElementById("sell-list").insertAdjacentHTML('beforeend', `<div style='margin-top:24px;'><b>🐮 Animal sales</b></div>` + html);
+  document.getElementById("sell-list").insertAdjacentHTML('beforeend', <div style='margin-top:24px;'><b>🐮 Animal sales</b></div> + html);
 }
 
 
@@ -435,6 +436,59 @@ function showMsg(msg) {
   }, 1800);
 }
 
+// --- Pi platba podle best practice ---
+var axiosClient = axios.create({
+  baseURL: "https://backend-production-9cdf.up.railway.app",
+  headers: {
+    "Content-Type": "application/json"
+  }
+});
+
+function onReadyForServerApproval(paymentId) {
+  console.log("🟡 onReadyForServerApproval", paymentId);
+  return new Promise(function (resolve, reject) {
+    axiosClient.post("/approve", { paymentId: paymentId })
+      .then(function (response) {
+        console.log("✅ Approve OK:", response.data);
+        resolve(response.data);
+      })
+      .catch(function (error) {
+        console.error("❌ Approve error:", error);
+        reject(error);
+      });
+  });
+}
+
+function onReadyForServerCompletion(paymentId, txid) {
+  console.log("🟢 onReadyForServerCompletion", paymentId, txid);
+  return new Promise(function (resolve, reject) {
+    axiosClient.post("/complete", { paymentId: paymentId, txid: txid })
+      .then(function (response) {
+        console.log("✅ Complete OK:", response.data);
+        var newBalance = getPi() + 600;
+        setPi(newBalance);
+        alert("✅ 600 tokens added!");
+        resolve(response.data);
+      })
+      .catch(function (error) {
+        console.error("❌ Completion error:", error);
+        alert("❌ Completion error: " + error.message);
+        reject(error);
+      });
+  });
+}
+
+var paymentCallbacks = {
+  onReadyForServerApproval: onReadyForServerApproval,
+  onReadyForServerCompletion: onReadyForServerCompletion,
+  onCancel: function (paymentId) {
+    alert("❌ Payment was cancelled");
+  },
+  onError: function (error, payment) {
+    alert("❌ Payment error: " + error.message);
+  }
+};
+
 document.getElementById("btn-dobit-pi").onclick = async function () {
   if (!window || !window.Pi) {
     return alert("⚠ Pi Network SDK not available!");
@@ -444,7 +498,10 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
     alert("🔐 Spouštím autentizaci...");
     var scopes = ["username", "payments"];
     var auth = await Pi.authenticate(scopes, function (payment) {
-      console.log("🔁 Neúplná platba: " + JSON.stringify(payment));
+      // --- incomplete payment handling (např. reload stránky) ---
+      if (payment && payment.identifier && payment.transaction && payment.transaction.txid) {
+        onReadyForServerCompletion(payment.identifier, payment.transaction.txid);
+      }
     });
 
     if (!auth || !auth.accessToken) {
@@ -452,7 +509,6 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
     }
 
     localStorage.setItem("piUser", auth.user.username);
-    console.log("🔐 Uživatelské jméno:", auth.user.username);
     alert("✅ Autentizace OK: " + auth.user.username);
 
     var paymentData = {
@@ -461,77 +517,9 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
       metadata: { topup: true }
     };
 
-    var hasApproved = false;
-    var hasCompleted = false;
-
-    var payment = await Pi.createPayment(paymentData, {
-      onReadyForServerApproval: function (paymentId) {
-        if (hasApproved) return;
-        hasApproved = true;
-
-        console.log("✅ Payment ready: " + paymentId);
-        alert("✅ onReadyForServerApproval spuštěno");
-
-        fetch("https://backend-production-9cdf.up.railway.app/approve", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ paymentId: paymentId })
-        })
-        .then(function (res) {
-          if (!res.ok) throw new Error("Server approval failed");
-          return res.json();
-        })
-        .then(function (data) {
-          console.log("✅ Server approved payment: " + JSON.stringify(data));
-          alert("✅ Server approve odpověděl OK");
-        })
-        .catch(function (err) {
-          console.error("❌ Server approval error: " + err.message);
-          alert("❌ Server approval error: " + err.message);
-        });
-      },
-
-      onReadyForServerCompletion: function (paymentId, txid) {
-        if (hasCompleted) return;
-        hasCompleted = true;
-
-        console.log("✅ Payment confirmed: " + txid);
-        alert("✅ onReadyForServerCompletion spuštěno");
-
-        fetch("https://backend-production-9cdf.up.railway.app/complete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ paymentId: paymentId, txid: txid })
-        })
-        .then(function (res) {
-          if (!res.ok) throw new Error("Server completion failed");
-          return res.json();
-        })
-        .then(function (data) {
-          console.log("✅ Payment completed on server: " + JSON.stringify(data));
-          alert("✅ Server complete odpověděl OK");
-          var newBalance = getPi() + 600;
-          setPi(newBalance);
-          alert("✅ 600 tokens successfully added!");
-        })
-        .catch(function (err) {
-          console.error("❌ Completion error: " + err.message);
-          alert("❌ Completion error: " + err.message);
-        });
-      },
-
-      onCancel: function () {
-        alert("❌ Payment cancelled.");
-      },
-
-      onError: function (err) {
-        console.error("❌ Payment error: ", err);
-        alert("❌ Payment error: " + err.message);
-      }
-    });
+    await Pi.createPayment(paymentData, paymentCallbacks);
 
   } catch (e) {
-    console.error("❌ Chyba během platby:", e);
     alert("❌ Něco se pokazilo:\n" + e.message);
   }
 };
