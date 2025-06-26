@@ -36,6 +36,17 @@
   </style>
 </head>
 <body>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const user = localStorage.getItem("piUser");
+    if (user) {
+      console.log("✅ Přihlášen jako:", user);
+      // třeba zobrazit do UI nebo automaticky odemknout placené funkce
+    } else {
+      console.log("❌ Uživatelské jméno nenalezeno");
+    }
+  });
+</script>
   <div class="nav-bar">
    <a href="pestovani.html" class="nav-link">🌱 Grow Sh*t</a>
 <a href="vyroba.html" class="nav-link">⚗️ Brewing</a>
