@@ -274,16 +274,16 @@ const MAX_DAYS = 30;
 
 // Inicializace login progressu
 function initDailyLogin() {
-  const raw = localStorage.getItem(LOGIN_KEY);
-  let data = raw ? JSON.parse(raw) : { days: [], last: null };
+  var raw = localStorage.getItem(LOGIN_KEY);
+  var data = raw ? JSON.parse(raw) : { days: [], last: null };
 
-  const now = new Date();
-  const todayStr = now.toDateString();
-  const container = document.getElementById("login-days");
+  var now = new Date();
+  var todayStr = now.toDateString();
+  var container = document.getElementById("login-days");
   container.innerHTML = "";
 
-  for (let i = 0; i < MAX_DAYS; i++) {
-    const div = document.createElement("div");
+  for (var i = 0; i < MAX_DAYS; i++) {
+    var div = document.createElement("div");
     div.textContent = i + 1;
     div.style.padding = "10px";
     div.style.borderRadius = "50%";
@@ -293,17 +293,18 @@ function initDailyLogin() {
     container.appendChild(div);
   }
 
-  const btn = document.getElementById("btn-daily-login");
-  const timerDiv = document.getElementById("login-timer");
-  const last = data.last ? new Date(data.last) : null;
-  const isNewDay = !last || last.toDateString() !== todayStr;
+  var btn = document.getElementById("btn-daily-login");
+  var timerDiv = document.getElementById("login-timer");
+  var last = data.last ? new Date(data.last) : null;
+  var isNewDay = !last || last.toDateString() !== todayStr;
 
   if (data.days.length === MAX_DAYS) {
     alert("✅ Reward unlocked! +100 ϖ");
     setPi(getPi() + 100);
     data = { days: [], last: now.getTime() };
     localStorage.setItem(LOGIN_KEY, JSON.stringify(data));
-    return initDailyLogin(); // restart po odměně
+    initDailyLogin();
+    return;
   }
 
   if (isNewDay) {
@@ -311,39 +312,36 @@ function initDailyLogin() {
     timerDiv.textContent = "";
   } else {
     btn.textContent = "Already claimed";
+    var midnight = new Date();
+    midnight.setHours(24, 0, 1, 0);
 
-    // Vypočítej čas do půlnoci
-    const midnight = new Date();
-    midnight.setHours(24, 0, 1, 0); // 00:00:01 dalšího dne
-    const msLeft = midnight - now;
-
-    // Odpočítávání
     function updateCountdown() {
-      const sec = Math.floor((midnight - new Date()) / 1000);
+      var sec = Math.floor((midnight - new Date()) / 1000);
       if (sec <= 0) {
         timerDiv.textContent = "You can now claim again!";
-        initDailyLogin(); // refresh UI
+        initDailyLogin();
         return;
       }
-      const h = Math.floor(sec / 3600);
-      const m = Math.floor((sec % 3600) / 60);
-      const s = sec % 60;
-      timerDiv.textContent = ⏳ Next login in ${h}h ${m}m ${s}s;
+      var h = Math.floor(sec / 3600);
+      var m = Math.floor((sec % 3600) / 60);
+      var s = sec % 60;
+      timerDiv.textContent = "⏳ Next login in " + h + "h " + m + "m " + s + "s";
       setTimeout(updateCountdown, 1000);
     }
-
     updateCountdown();
   }
 }
 
-// Vždycky otevře modal a přidá login jen pokud je nový den
-document.getElementById("btn-daily-login").addEventListener("click", function () {
-  const raw = localStorage.getItem(LOGIN_KEY);
-  let data = raw ? JSON.parse(raw) : { days: [], last: null };
+// --- Tohle už je mimo funkci initDailyLogin ---
+// Otevření modalu a případné přidání dne
 
-  const now = new Date();
-  const last = data.last ? new Date(data.last) : null;
-  const isNewDay = !last || last.toDateString() !== now.toDateString();
+document.getElementById("btn-daily-login").addEventListener("click", function () {
+  var raw = localStorage.getItem(LOGIN_KEY);
+  var data = raw ? JSON.parse(raw) : { days: [], last: null };
+
+  var now = new Date();
+  var last = data.last ? new Date(data.last) : null;
+  var isNewDay = !last || last.toDateString() !== now.toDateString();
 
   if (isNewDay) {
     data.days.push(data.days.length);
@@ -355,81 +353,85 @@ document.getElementById("btn-daily-login").addEventListener("click", function ()
   initDailyLogin();
 });
 
-
-
 function closeDailyModal() {
   document.getElementById("daily-modal").style.display = "none";
 }
 
-
-// Prodej výrobků (starý)
+// Prodej výrobků
 function sell(idx) {
-  let sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
-  let item = items[idx];
-  if ((sklad[item.key]||0) < 1) { showMsg("Nothing to sell!"); return; }
+  var sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
+  var item = items[idx];
+  if ((sklad[item.key] || 0) < 1) {
+    showMsg("Nothing to sell!");
+    return;
+  }
   sklad[item.key]--;
   localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
-  let coins = getMoney() + prices[item.key];
+  var coins = getMoney() + prices[item.key];
   setMoney(coins);
-  showMsg(Sold 1× ${item.label} for ${prices[item.key]} $);
+  showMsg("Sold 1× " + item.label + " for " + prices[item.key] + " $");
   renderSellList();
 }
+
 function sellAll(idx) {
-  let sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
-  let item = items[idx];
-  let count = sklad[item.key]||0;
-  if (count < 1) { showMsg("Nothing to sell!"); return; }
-  sklad[item.key]=0;
+  var sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
+  var item = items[idx];
+  var count = sklad[item.key] || 0;
+  if (count < 1) {
+    showMsg("Nothing to sell!");
+    return;
+  }
+  sklad[item.key] = 0;
   localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
-  let coins = getMoney() + prices[item.key]*count;
+  var coins = getMoney() + prices[item.key] * count;
   setMoney(coins);
-  showMsg(Sell ${count}× ${item.label} for ${prices[item.key]*count} $);
+  showMsg("Sell " + count + "× " + item.label + " for " + (prices[item.key] * count) + " $");
   renderSellList();
 }
 
-// === Prodej zvířat (nová sekce pod výrobky) ===
-
+// Prodej zvířat
 function pocetZvirat(typ) {
-  let animals = JSON.parse(localStorage.getItem("lihobaronZvirata") || "[]");
-  return animals.filter(z => z.typ === typ && !z.mrtve).length;
+  var animals = JSON.parse(localStorage.getItem("lihobaronZvirata") || "[]");
+  return animals.filter(function (z) { return z.typ === typ && !z.mrtve; }).length;
 }
+
 function prodatZvire(typ) {
-  let animals = JSON.parse(localStorage.getItem("lihobaronZvirata") || "[]");
-  let idx = animals.findIndex(z => z.typ === typ && !z.mrtve);
+  var animals = JSON.parse(localStorage.getItem("lihobaronZvirata") || "[]");
+  var idx = animals.findIndex(function (z) { return z.typ === typ && !z.mrtve; });
   if (idx > -1) {
     animals.splice(idx, 1);
     localStorage.setItem("lihobaronZvirata", JSON.stringify(animals));
-    let coins = getMoney() + animalDefs[typ].cena;
+    var coins = getMoney() + animalDefs[typ].cena;
     setMoney(coins);
-    showMsg(Sold 1× ${animalDefs[typ].nazev} za ${animalDefs[typ].cena} $);
+    showMsg("Sold 1× " + animalDefs[typ].nazev + " za " + animalDefs[typ].cena + " $");
     renderSellList();
   } else {
     showMsg("No animal to sell!");
   }
 }
+
 function renderZvirataList() {
-  let html = "";
-  Object.keys(animalDefs).forEach(key => {
-    let pocet = pocetZvirat(key);
+  var html = "";
+  Object.keys(animalDefs).forEach(function (key) {
+    var pocet = pocetZvirat(key);
     if (pocet > 0) {
-      html += `<div class="item-row">
-        <span class="item-emoji">${animalDefs[key].emoji}</span>
-        <span class="item-label">${animalDefs[key].nazev}</span>
-        <div style="margin-left:auto;text-align:right;">
-          <div style="font-size:0.98em; color:#888;">Count: <b>${pocet}</b></div>
-          <div style="font-size:0.98em; color:#888;">Cena: ${animalDefs[key].cena} $</div>
-          <button class="sell-btn" onclick="prodatZvire('${key}')">Sell 1</button>
-        </div>
-      </div>`;
+      html += "<div class=\"item-row\">" +
+        "<span class=\"item-emoji\">" + animalDefs[key].emoji + "</span>" +
+        "<span class=\"item-label\">" + animalDefs[key].nazev + "</span>" +
+        "<div style=\"margin-left:auto;text-align:right;\">" +
+        "<div style=\"font-size:0.98em; color:#888;\">Count: <b>" + pocet + "</b></div>" +
+        "<div style=\"font-size:0.98em; color:#888;\">Cena: " + animalDefs[key].cena + " $</div>" +
+        "<button class=\"sell-btn\" onclick=\"prodatZvire('" + key + "')\">Sell 1</button>" +
+        "</div></div>";
     }
   });
-  if (!html) html = "<div style='text-align:center;color:#aaa;margin-top:17px;'>No animals to sell!</div>";
-  document.getElementById("sell-list").insertAdjacentHTML('beforeend', <div style='margin-top:24px;'><b>🐮 Animal sales</b></div> + html);
+  if (!html) {
+    html = "<div style='text-align:center;color:#aaa;margin-top:17px;'>No animals to sell!</div>";
+  }
+  document.getElementById("sell-list").insertAdjacentHTML('beforeend', "<div style='margin-top:24px;'><b>🐮 Animal sales</b></div>" + html);
 }
 
-
-
-
+// Zpráva
 function showMsg(msg) {
   document.getElementById("msg").textContent = msg;
   setTimeout(function () {
@@ -527,6 +529,4 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
 renderSellList();
 initDailyLogin();
 </script>
-
-</body>
-</html>
+</body>  
