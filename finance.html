@@ -432,42 +432,51 @@ function showMsg(msg) {
   setTimeout(()=>document.getElementById("msg").textContent="",1800);
 }
 document.getElementById("btn-dobit-pi").onclick = async function () {
-  if (!window?.Pi) return alert("Pi Network SDK not available!");
+  if (!window?.Pi) return alert("⚠ Pi Network SDK not available!");
 
   try {
+    const scopes = ["username", "payments"];
+    const auth = await Pi.authenticate(scopes, function (payment) {
+      console.log("🔁 Neúplná platba:", payment);
+    });
+
+    if (!auth || !auth.accessToken) {
+      return alert("❌ Chybí accessToken – přihlášení selhalo.");
+    }
+
+    // ✅ Ulož si user, pokud chceš
+    localStorage.setItem("piUser", auth.user.username);
+
     const paymentData = {
-      amount: 5, // cena v PI
-      memo: "Top up 600 tokens", // zpráva pro uživatele
-      metadata: { type: "topup", amount: 600 }
+      amount: 5,
+      memo: "Top up 600 tokens",
+      metadata: { type: "topup", amount: 600 },
     };
 
-    const payment = await Pi.createPayment(paymentData);
-    payment.onReadyForServerApproval(async function (paymentId) {
-      // Tady můžeš poslat paymentId na backend pro schválení (pokud máš)
-      console.log("Payment ready for server approval:", paymentId);
+    const payment = await Pi.createPayment(paymentData, {
+      onReadyForServerApproval: function (paymentId) {
+        console.log("✅ Payment ready:", paymentId);
+        // Tady můžeš poslat na backend
+      },
+      onReadyForServerCompletion: function (paymentId, txid) {
+        console.log("✅ Payment confirmed:", txid);
+        const newBalance = getPi() + 600;
+        setPi(newBalance);
+        alert("✅ 600 tokens successfully added!");
+      },
+      onCancel: function () {
+        alert("❌ Payment cancelled.");
+      },
+      onError: function (err) {
+        alert("❌ Payment error: " + err.message);
+      },
     });
 
-    payment.onReadyForServerCompletion(async function (paymentId, txid) {
-      console.log("Payment confirmed:", txid);
-      // Tady připíšeme 600 tokenů
-      const newBalance = getPi() + 600;
-      setPi(newBalance);
-      alert("✅ 600 tokens successfully added!");
-    });
-
-    payment.onCancel(() => {
-      alert("❌ Payment was cancelled.");
-    });
-
-    payment.onError((err) => {
-      alert("❌ Payment error: " + err.message);
-    });
   } catch (e) {
-  console.error("Payment error:", e);
-  alert("Something went wrong during payment:\n" + e.message);
-}
+    console.error("❌ Chyba během platby:", e);
+    alert("❌ Něco se pokazilo:\n" + e.message);
+  }
 };
-
 
 renderSellList();
 initDailyLogin();
