@@ -452,7 +452,10 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
     alert("Something went wrong during payment.");
   }
 };
-
+catch (e) {
+  console.error("Payment error:", e);
+  alert("Something went wrong during payment:\n" + e.message);
+}
 
 renderSellList();
 initDailyLogin();
