@@ -424,6 +424,14 @@ function renderZvirataList() {
   if (!html) html = "<div style='text-align:center;color:#aaa;margin-top:17px;'>No animals to sell!</div>";
   document.getElementById("sell-list").insertAdjacentHTML('beforeend', `<div style='margin-top:24px;'><b>🐮 Animal sales</b></div>` + html);
 }
+
+function showMsg(msg) {
+  document.getElementById("msg").textContent = msg;
+  setTimeout(function () {
+    document.getElementById("msg").textContent = "";
+  }, 1800);
+}
+
 document.getElementById("btn-dobit-pi").onclick = async function () {
   if (!window || !window.Pi) {
     return alert("⚠ Pi Network SDK not available!");
@@ -440,16 +448,31 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
     }
 
     localStorage.setItem("piUser", auth.user.username);
+    console.log("🔐 Uživatelské jméno:", auth.user.username);
 
-   var paymentData = {
-  amount: 5,
-  memo: "topup",
-  metadata: { topup: true }
-};
+    // Ověření accessTokenu přes backend
+    var verifyRes = await fetch("https://backend-production-9cdf.up.railway.app/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accessToken: auth.accessToken })
+    });
+
+    if (!verifyRes.ok) {
+      return alert("❌ Verifikace accessTokenu selhala!");
+    }
+
+    console.log("✅ AccessToken ověřen");
+
+    var paymentData = {
+      amount: 5,
+      memo: "topup",
+      metadata: { topup: true }
+    };
 
     var payment = await Pi.createPayment(paymentData, {
       onReadyForServerApproval: function (paymentId) {
         console.log("✅ Payment ready: " + paymentId);
+
         fetch("https://backend-production-9cdf.up.railway.app/approve", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -463,12 +486,14 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
           console.log("✅ Server approved payment: " + JSON.stringify(data));
         })
         .catch(function (err) {
+          console.error("❌ Server approval error: " + err.message);
           alert("❌ Server approval error: " + err.message);
         });
       },
 
       onReadyForServerCompletion: function (paymentId, txid) {
         console.log("✅ Payment confirmed: " + txid);
+
         fetch("https://backend-production-9cdf.up.railway.app/complete", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -485,6 +510,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
           alert("✅ 600 tokens successfully added!");
         })
         .catch(function (err) {
+          console.error("❌ Completion error: " + err.message);
           alert("❌ Completion error: " + err.message);
         });
       },
@@ -494,6 +520,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
       },
 
       onError: function (err) {
+        console.error("❌ Payment error: ", err);
         alert("❌ Payment error: " + err.message);
       }
     });
@@ -503,6 +530,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
     alert("❌ Něco se pokazilo:\n" + e.message);
   }
 };
+
 renderSellList();
 initDailyLogin();
 </script>
