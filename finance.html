@@ -425,7 +425,7 @@ function renderZvirataList() {
   document.getElementById("sell-list").insertAdjacentHTML('beforeend', `<div style='margin-top:24px;'><b>🐮 Animal sales</b></div>` + html);
 }
 
-
+<script>
 function showMsg(msg) {
   document.getElementById("msg").textContent = msg;
   setTimeout(function () {
@@ -439,6 +439,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
   }
 
   try {
+    alert("🔐 Spouštím autentizaci...");
     var scopes = ["username", "payments"];
     var auth = await Pi.authenticate(scopes, function (payment) {
       console.log("🔁 Neúplná platba: " + JSON.stringify(payment));
@@ -450,6 +451,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
 
     localStorage.setItem("piUser", auth.user.username);
     console.log("🔐 Uživatelské jméno:", auth.user.username);
+    alert("✅ Autentizace OK: " + auth.user.username);
 
     // Ověření accessTokenu přes backend
     var verifyRes = await fetch("https://backend-production-9cdf.up.railway.app/verify", {
@@ -462,7 +464,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
       return alert("❌ Verifikace accessTokenu selhala!");
     }
 
-    console.log("✅ AccessToken ověřen");
+    alert("✅ Verifikace accessTokenu OK");
 
     var paymentData = {
       amount: 5,
@@ -479,6 +481,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
         hasApproved = true;
 
         console.log("✅ Payment ready: " + paymentId);
+        alert("✅ onReadyForServerApproval spuštěno");
 
         fetch("https://backend-production-9cdf.up.railway.app/approve", {
           method: "POST",
@@ -491,6 +494,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
         })
         .then(function (data) {
           console.log("✅ Server approved payment: " + JSON.stringify(data));
+          alert("✅ Server approve odpověděl OK");
         })
         .catch(function (err) {
           console.error("❌ Server approval error: " + err.message);
@@ -503,6 +507,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
         hasCompleted = true;
 
         console.log("✅ Payment confirmed: " + txid);
+        alert("✅ onReadyForServerCompletion spuštěno");
 
         fetch("https://backend-production-9cdf.up.railway.app/complete", {
           method: "POST",
@@ -515,6 +520,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
         })
         .then(function (data) {
           console.log("✅ Payment completed on server: " + JSON.stringify(data));
+          alert("✅ Server complete odpověděl OK");
           var newBalance = getPi() + 600;
           setPi(newBalance);
           alert("✅ 600 tokens successfully added!");
