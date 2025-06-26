@@ -425,6 +425,7 @@ function renderZvirataList() {
   document.getElementById("sell-list").insertAdjacentHTML('beforeend', `<div style='margin-top:24px;'><b>🐮 Animal sales</b></div>` + html);
 }
 
+
 function showMsg(msg) {
   document.getElementById("msg").textContent = msg;
   setTimeout(function () {
@@ -469,8 +470,14 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
       metadata: { topup: true }
     };
 
+    var hasApproved = false;
+    var hasCompleted = false;
+
     var payment = await Pi.createPayment(paymentData, {
       onReadyForServerApproval: function (paymentId) {
+        if (hasApproved) return;
+        hasApproved = true;
+
         console.log("✅ Payment ready: " + paymentId);
 
         fetch("https://backend-production-9cdf.up.railway.app/approve", {
@@ -492,6 +499,9 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
       },
 
       onReadyForServerCompletion: function (paymentId, txid) {
+        if (hasCompleted) return;
+        hasCompleted = true;
+
         console.log("✅ Payment confirmed: " + txid);
 
         fetch("https://backend-production-9cdf.up.railway.app/complete", {
