@@ -55,7 +55,31 @@
   <button id="btn-dobit-pi" style="background:#2196f3; color:white; padding:6px 16px; border-radius:7px; font-weight:bold; cursor:pointer;">
     Top up ϖ
   </button>
+  <button id="btn-daily-login" style="background:#4caf50; color:white; padding:6px 16px; border-radius:7px; font-weight:bold; cursor:pointer; margin-left: 8px;">
+    Daily Login
+  </button>
 </div>
+
+<!-- Modal okno -->
+<div id="daily-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:20px; border-radius:10px; box-shadow:0 0 10px #0005; z-index:2000; text-align:center;">
+
+  <h3>Daily Login</h3>
+
+  <div style="font-size:0.95em; color:#444; margin-bottom: 8px;">
+    Log in for 30 days and earn <b style="color:#4caf50;">100 ϖ</b> 🎁
+  </div>
+
+  <div id="login-timer" style="color:#1760a3; font-weight:bold; font-size: 1em; margin-bottom: 12px;"></div>
+
+
+  <div id="login-days" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; margin:10px 0;"></div>
+
+  <button onclick="closeDailyModal()" style="margin-top:10px; padding:5px 12px;">Close</button>
+</div>
+
+
+
+
 
 </div>
   <div class="container">
@@ -119,7 +143,16 @@ const items = [
       { key: "whiskey_kukurice", label: "Whiskey", emoji: "🥃" },
       { key: "vodka_psenice",    label: "Vodka", emoji: "🍸" },
       { key: "rum_brambora",     label: "Rum", emoji: "🏴‍☠️" },
-];
+      // ... ostatní položky ...
+      { key: "marmelada_broskve", label: "Peach jam", emoji: "🍊🍯" },
+      { key: "marmelada_meruňky", label: "Apricot jam", emoji: "🍑🍯" },
+      { key: "marmelada_jahody",  label: "Strawberry jam", emoji: "🍓🍯" },
+      { key: "marmelada_třešně",  label: "Cherry jam", emoji: "🍒🍯" },
+      { key: "marmelada_švestky", label: "Plum jam", emoji: "🟣🍯" },
+      { key: "marmelada_hrušky",  label: "Pear jam", emoji: "🍐🍯" },
+      { key: "marmelada_jablko",  label: "Apple jam", emoji: "🍏🍯" },
+
+    ];
 
 // Výchozí ceny
 const defaultPrices = {
@@ -129,7 +162,9 @@ const defaultPrices = {
   kvas_švestky: 17, kvas_hrušky: 15, kvas_meruňky: 18, kvas_broskve: 19, kvas_jablka: 15, kvas_psenice: 12, kvas_kukuřice: 14, kvas_brambora: 15,
   pivo: 32, vino: 60, cider: 70, popkorn: 50, hranolky: 60,
   mléko: 30, kozí_mléko: 45, vejce: 15, šunka: 45, krůtí_maso: 30, med: 45, vlna: 60, kachní_vejce: 30, králičí_maso: 45,
-  palenka_švestky: 46, palenka_hrušky: 44, palenka_meruňky: 48, palenka_broskve: 50, palenka_jablka: 44, vodka_psenice: 35, whiskey_kukurice: 40, rum_brambora: 42
+  palenka_švestky: 46, palenka_hrušky: 44, palenka_meruňky: 48, palenka_broskve: 50, palenka_jablka: 44, vodka_psenice: 35, whiskey_kukurice: 40, rum_brambora: 42, 
+  marmelada_broskve: 70, marmelada_meruňky: 65, marmelada_jahody: 70, marmelada_třešně: 68, marmelada_švestky: 67, marmelada_hrušky: 64, marmelada_jablko: 63,
+
 };
 const prices = {...defaultPrices};
 
@@ -204,6 +239,97 @@ function renderSellList() {
   if (!html) html = "<div style='text-align:center;color:#aaa;margin-top:17px;'>You have nothing to sell!<br>Plant, grow, brew or distill some slivovitz!</div>";
   document.getElementById("sell-list").innerHTML = html;
   renderZvirataList();
+}
+const LOGIN_KEY = "lihoDailyLogin";
+const MAX_DAYS = 30;
+
+// Inicializace login progressu
+function initDailyLogin() {
+  const raw = localStorage.getItem(LOGIN_KEY);
+  let data = raw ? JSON.parse(raw) : { days: [], last: null };
+
+  const now = new Date();
+  const todayStr = now.toDateString();
+  const container = document.getElementById("login-days");
+  container.innerHTML = "";
+
+  for (let i = 0; i < MAX_DAYS; i++) {
+    const div = document.createElement("div");
+    div.textContent = i + 1;
+    div.style.padding = "10px";
+    div.style.borderRadius = "50%";
+    div.style.textAlign = "center";
+    div.style.background = data.days.includes(i) ? "#4caf50" : "#ccc";
+    div.style.color = "white";
+    container.appendChild(div);
+  }
+
+  const btn = document.getElementById("btn-daily-login");
+  const timerDiv = document.getElementById("login-timer");
+  const last = data.last ? new Date(data.last) : null;
+  const isNewDay = !last || last.toDateString() !== todayStr;
+
+  if (data.days.length === MAX_DAYS) {
+    alert("✅ Reward unlocked! +100 ϖ");
+    setPi(getPi() + 100);
+    data = { days: [], last: now.getTime() };
+    localStorage.setItem(LOGIN_KEY, JSON.stringify(data));
+    return initDailyLogin(); // restart po odměně
+  }
+
+  if (isNewDay) {
+    btn.textContent = "Daily Login";
+    timerDiv.textContent = "";
+  } else {
+    btn.textContent = "Already claimed";
+
+    // Vypočítej čas do půlnoci
+    const midnight = new Date();
+    midnight.setHours(24, 0, 1, 0); // 00:00:01 dalšího dne
+    const msLeft = midnight - now;
+
+    // Odpočítávání
+    function updateCountdown() {
+      const sec = Math.floor((midnight - new Date()) / 1000);
+      if (sec <= 0) {
+        timerDiv.textContent = "You can now claim again!";
+        initDailyLogin(); // refresh UI
+        return;
+      }
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      timerDiv.textContent = `⏳ Next login in ${h}h ${m}m ${s}s`;
+      setTimeout(updateCountdown, 1000);
+    }
+
+    updateCountdown();
+  }
+}
+
+// Vždycky otevře modal a přidá login jen pokud je nový den
+document.getElementById("btn-daily-login").addEventListener("click", function () {
+  const raw = localStorage.getItem(LOGIN_KEY);
+  let data = raw ? JSON.parse(raw) : { days: [], last: null };
+
+  const now = new Date();
+  const last = data.last ? new Date(data.last) : null;
+  const isNewDay = !last || last.toDateString() !== now.toDateString();
+
+  if (isNewDay) {
+    data.days.push(data.days.length);
+    data.last = now.getTime();
+    localStorage.setItem(LOGIN_KEY, JSON.stringify(data));
+  }
+
+  document.getElementById("daily-modal").style.display = "block";
+  initDailyLogin();
+});
+
+
+
+function closeDailyModal() {
+  document.getElementById("daily-modal").style.display = "none";
 }
 
 
@@ -280,7 +406,7 @@ function showMsg(msg) {
 }
 document.getElementById("btn-dobit-pi").onclick = function() {
   var heslo = prompt("Enter password to top up PI tokens:");
-  if (heslo === "1387") {  // sem dej své tajné heslo!
+  if (heslo === "1893") {  // sem dej své tajné heslo!
     setPi(getPi() + 600);
     alert("600 PI added!");
   } else {
@@ -290,6 +416,8 @@ document.getElementById("btn-dobit-pi").onclick = function() {
 
 
 renderSellList();
+initDailyLogin();
+
 </script>
 </body>
 </html>
