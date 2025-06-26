@@ -26,28 +26,29 @@
       padding: 0;
       text-align: center;
     }
-  .header-row {
+.header-row {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  z-index: 11;
+  margin-top: 12px;
+  margin-right: 8px;
 }
+
 @media (max-width: 600px) {
   .header-row {
     flex-direction: column;
     align-items: flex-end;
-    gap: 3px;
-    top: 7px;
-    right: 6px;
+    gap: 4px;
+    margin-top: 4px;
+    margin-right: 3px;
   }
-  .header-row button, .header-row div, .header-row a {
+  .header-row button,
+  .header-row div,
+  .header-row a {
     font-size: 1em !important;
-    padding: 7px 18px !important;
+    padding: 8px 16px !important;
   }
 }
 
