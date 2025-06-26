@@ -426,6 +426,7 @@ function renderZvirataList() {
 }
 
 
+
 function showMsg(msg) {
   document.getElementById("msg").textContent = msg;
   setTimeout(function () {
@@ -435,10 +436,11 @@ function showMsg(msg) {
 
 document.getElementById("btn-dobit-pi").onclick = async function () {
   if (!window || !window.Pi) {
-    return alert("⚠ Pi Network SDK není dostupné!");
+    return alert("⚠ Pi Network SDK not available!");
   }
 
   try {
+    alert("🔐 Spouštím autentizaci...");
     var scopes = ["username", "payments"];
     var auth = await Pi.authenticate(scopes, function (payment) {
       console.log("🔁 Neúplná platba: " + JSON.stringify(payment));
@@ -450,6 +452,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
 
     localStorage.setItem("piUser", auth.user.username);
     console.log("🔐 Uživatelské jméno:", auth.user.username);
+    alert("✅ Autentizace OK: " + auth.user.username);
 
     // Ověření accessTokenu přes backend
     var verifyRes = await fetch("https://backend-production-9cdf.up.railway.app/verify", {
@@ -462,7 +465,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
       return alert("❌ Verifikace accessTokenu selhala!");
     }
 
-    console.log("✅ AccessToken ověřen");
+    alert("✅ Verifikace accessTokenu OK");
 
     var paymentData = {
       amount: 5,
@@ -479,7 +482,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
         hasApproved = true;
 
         console.log("✅ Payment ready: " + paymentId);
-        alert("✅ Payment připraven – ID: " + paymentId);
+        alert("✅ onReadyForServerApproval spuštěno");
 
         fetch("https://backend-production-9cdf.up.railway.app/approve", {
           method: "POST",
@@ -504,8 +507,8 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
         if (hasCompleted) return;
         hasCompleted = true;
 
-        console.log("🎯 onReadyForServerCompletion aktivován!");
-        alert("🎯 Platba dokončena! TXID: " + txid);
+        console.log("✅ Payment confirmed: " + txid);
+        alert("✅ onReadyForServerCompletion spuštěno");
 
         fetch("https://backend-production-9cdf.up.railway.app/complete", {
           method: "POST",
@@ -518,6 +521,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
         })
         .then(function (data) {
           console.log("✅ Payment completed on server: " + JSON.stringify(data));
+          alert("✅ Server complete odpověděl OK");
           var newBalance = getPi() + 600;
           setPi(newBalance);
           alert("✅ 600 tokens successfully added!");
@@ -529,7 +533,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
       },
 
       onCancel: function () {
-        alert("❌ Payment zrušen.");
+        alert("❌ Payment cancelled.");
       },
 
       onError: function (err) {
@@ -537,32 +541,6 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
         alert("❌ Payment error: " + err.message);
       }
     });
-
-    // ⛑ Ruční fallback, když completion nenastane do 15 sekund
-    setTimeout(function () {
-      if (!hasCompleted) {
-        var fallbackTxid = prompt("⚠ onReadyForServerCompletion se nespustil.\nZadej txid ručně:");
-        if (fallbackTxid && payment && payment.identifier) {
-          fetch("https://backend-production-9cdf.up.railway.app/complete", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paymentId: payment.identifier, txid: fallbackTxid })
-          })
-          .then(function (res) {
-            if (!res.ok) throw new Error("Server fallback completion failed");
-            return res.json();
-          })
-          .then(function (data) {
-            alert("✅ Ruční dokončení proběhlo OK");
-            var newBalance = getPi() + 600;
-            setPi(newBalance);
-          })
-          .catch(function (err) {
-            alert("❌ Chyba při ručním complete: " + err.message);
-          });
-        }
-      }
-    }, 15000); // 15 sekund čekání
 
   } catch (e) {
     console.error("❌ Chyba během platby:", e);
