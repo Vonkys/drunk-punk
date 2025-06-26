@@ -452,20 +452,8 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
     }
 
     localStorage.setItem("piUser", auth.user.username);
-    console.log("🔐 Uživatelské jméno: " + auth.user.username);
+    console.log("🔐 Uživatelské jméno:", auth.user.username);
     alert("✅ Autentizace OK: " + auth.user.username);
-
-    var verifyRes = await fetch("https://backend-production-9cdf.up.railway.app/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accessToken: auth.accessToken })
-    });
-
-    if (!verifyRes.ok) {
-      return alert("❌ Verifikace accessTokenu selhala!");
-    }
-
-    alert("✅ Verifikace accessTokenu OK");
 
     var paymentData = {
       amount: 5,
@@ -547,9 +535,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
     alert("❌ Něco se pokazilo:\n" + e.message);
   }
 };
-
-renderSellList();
-initDailyLogin();
 </script>
+
 </body>
 </html>
