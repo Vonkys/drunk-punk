@@ -429,47 +429,83 @@ function renderZvirataList() {
 // Zpráva
 function showMsg(msg) {
   document.getElementById("msg").textContent = msg;
-  setTimeout(()=>document.getElementById("msg").textContent="",1800);
+  setTimeout(function () {
+    document.getElementById("msg").textContent = "";
+  }, 1800);
 }
+
 document.getElementById("btn-dobit-pi").onclick = async function () {
-  if (!window?.Pi) return alert("⚠ Pi Network SDK not available!");
+  if (!window || !window.Pi) {
+    return alert("⚠ Pi Network SDK not available!");
+  }
 
   try {
-    const scopes = ["username", "payments"];
-    const auth = await Pi.authenticate(scopes, function (payment) {
-      console.log("🔁 Neúplná platba:", payment);
+    var scopes = ["username", "payments"];
+    var auth = await Pi.authenticate(scopes, function (payment) {
+      console.log("🔁 Neúplná platba: ", payment);
     });
 
     if (!auth || !auth.accessToken) {
       return alert("❌ Chybí accessToken – přihlášení selhalo.");
     }
 
-    // ✅ Ulož si user, pokud chceš
     localStorage.setItem("piUser", auth.user.username);
 
-    const paymentData = {
+    var paymentData = {
       amount: 5,
       memo: "Top up 600 tokens",
-      metadata: { type: "topup", amount: 600 },
+      metadata: { type: "topup", amount: 600 }
     };
 
-    const payment = await Pi.createPayment(paymentData, {
+    var payment = await Pi.createPayment(paymentData, {
       onReadyForServerApproval: function (paymentId) {
-        console.log("✅ Payment ready:", paymentId);
-        // Tady můžeš poslat na backend
+        console.log("✅ Payment ready: " + paymentId);
+        fetch("https://tvuj-server.vercel.app/approve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentId: paymentId })
+        })
+        .then(function (res) {
+          if (!res.ok) throw new Error("Server approval failed");
+          return res.json();
+        })
+        .then(function (data) {
+          console.log("✅ Server approved payment:", data);
+        })
+        .catch(function (err) {
+          alert("❌ Server approval error: " + err.message);
+        });
       },
+
       onReadyForServerCompletion: function (paymentId, txid) {
-        console.log("✅ Payment confirmed:", txid);
-        const newBalance = getPi() + 600;
-        setPi(newBalance);
-        alert("✅ 600 tokens successfully added!");
+        console.log("✅ Payment confirmed: " + txid);
+        fetch("https://tvuj-server.vercel.app/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentId: paymentId, txid: txid })
+        })
+        .then(function (res) {
+          if (!res.ok) throw new Error("Server completion failed");
+          return res.json();
+        })
+        .then(function (data) {
+          console.log("✅ Payment completed on server:", data);
+          var newBalance = getPi() + 600;
+          setPi(newBalance);
+          alert("✅ 600 tokens successfully added!");
+        })
+        .catch(function (err) {
+          alert("❌ Completion error: " + err.message);
+        });
       },
+
       onCancel: function () {
         alert("❌ Payment cancelled.");
       },
+
       onError: function (err) {
         alert("❌ Payment error: " + err.message);
-      },
+      }
     });
 
   } catch (e) {
@@ -480,7 +516,6 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
 
 renderSellList();
 initDailyLogin();
-
 </script>
 </body>
 </html>
