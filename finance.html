@@ -441,11 +441,11 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
 
     localStorage.setItem("piUser", auth.user.username);
 
-    var paymentData = {
-      amount: 5,
-      memo: "Top up 600 tokens",
-      metadata: { type: "topup", amount: 600 }
-    };
+   var paymentData = {
+  amount: 5,
+  memo: "topup",
+  metadata: { topup: true }
+};
 
     var payment = await Pi.createPayment(paymentData, {
       onReadyForServerApproval: function (paymentId) {
