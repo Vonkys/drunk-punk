@@ -71,7 +71,22 @@
     margin-right: 30px;
   }
 }
-
+.header-fix {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  z-index: 100;
+}
+@media (max-width: 600px) {
+  .header-fix {
+    right: 5px;
+    top: 5px;
+  }
+}
     
     .title {
       font-size: 2.5em;
@@ -172,7 +187,18 @@
   </style>
 </head>
 <body>
-
+<div class="header-fix">
+  <div id="pi-login-wrap">
+    <button id="btn-pi-login" style="background:#fb8c00;color:white;padding:8px 24px;font-size:1em;border:none;border-radius:10px;cursor:pointer;">
+      Login
+    </button>
+    <div id="pi-user-info" style="margin-top:2px;color:#208278;"></div>
+  </div>
+  <div class="track-visits">🕵 We track visits</div>
+  <div class="reset-link" onclick="resetGame()" style="font-weight: bold;">
+    🔄 Reset game
+  </div>
+</div>
 <div class="okurka-help-row">
   <a href="napoveda.html" title="Help" class="okurka-btn">❓</a>
 </div>
