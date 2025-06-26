@@ -479,7 +479,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
 
       onReadyForServerCompletion: function (paymentId, txid) {
         console.log("✅ Payment confirmed: " + txid);
-        fetch("https://tvuj-server.vercel.app/complete", {
+        fetch("https://backend-production-9cdf.up.railway.app/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ paymentId: paymentId, txid: txid })
