@@ -424,7 +424,9 @@ function renderZvirataList() {
   if (!html) html = "<div style='text-align:center;color:#aaa;margin-top:17px;'>No animals to sell!</div>";
   document.getElementById("sell-list").insertAdjacentHTML('beforeend', `<div style='margin-top:24px;'><b>🐮 Animal sales</b></div>` + html);
 }
-
+<button id="btn-test-complete" style="position:fixed;bottom:10px;right:10px;padding:8px;background:red;color:white;z-index:9999;">
+  💥 Otestuj /complete ručně
+</button>
 
 
 function showMsg(msg) {
@@ -454,7 +456,6 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
     console.log("🔐 Uživatelské jméno:", auth.user.username);
     alert("✅ Autentizace OK: " + auth.user.username);
 
-    // Ověření accessTokenu přes backend
     var verifyRes = await fetch("https://backend-production-9cdf.up.railway.app/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -482,7 +483,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
         hasApproved = true;
 
         console.log("✅ Payment ready: " + paymentId);
-        alert("✅ onReadyForServerApproval spuštěno");
+        alert("✅ Payment připraven – ID:\n" + paymentId);
 
         fetch("https://backend-production-9cdf.up.railway.app/approve", {
           method: "POST",
@@ -508,7 +509,7 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
         hasCompleted = true;
 
         console.log("✅ Payment confirmed: " + txid);
-        alert("✅ onReadyForServerCompletion spuštěno");
+        alert("✅ onReadyForServerCompletion spuštěno – TXID:\n" + txid);
 
         fetch("https://backend-production-9cdf.up.railway.app/complete", {
           method: "POST",
@@ -546,6 +547,31 @@ document.getElementById("btn-dobit-pi").onclick = async function () {
     console.error("❌ Chyba během platby:", e);
     alert("❌ Něco se pokazilo:\n" + e.message);
   }
+};
+
+document.getElementById("btn-test-complete").onclick = function () {
+  var paymentId = prompt("Zadej paymentId (z console.log nebo backendu):");
+  if (!paymentId) return;
+
+  var txid = prompt("Zadej txid (z wallet nebo backendu):");
+  if (!txid) return;
+
+  fetch("https://backend-production-9cdf.up.railway.app/complete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ paymentId: paymentId, txid: txid })
+  })
+  .then(function (res) {
+    if (!res.ok) throw new Error("Ruční /complete selhal");
+    return res.json();
+  })
+  .then(function (data) {
+    console.log("✅ Ruční complete OK: " + JSON.stringify(data));
+    alert("✅ Ruční complete úspěšný: " + JSON.stringify(data));
+  })
+  .catch(function (err) {
+    alert("❌ Chyba při ručním /complete: " + err.message);
+  });
 };
 
 renderSellList();
