@@ -1,87 +1,75 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Pi Test Platba</title>
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <title>Pi platba – test</title>
 </head>
 <body>
-  <button id="btn-platba">Zaplatit 5 Pi</button>
+  <button id="btn-pay">Zaplatit 5 Pi</button>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      var wait = setInterval(function () {
-        if (window.Pi && Pi.init) {
-          Pi.init({ version: "2.0", sandbox: false });
-          clearInterval(wait);
-          console.log("✅ Pi SDK inicializováno");
+    // Tvoje railway backend adresa
+    var backendUrl = "https://backend-production-9cdf.up.railway.app";
 
-          document.getElementById("btn-platba").onclick = async function () {
-            alert("Tlačítko zmáčknuto! Jdu na autentizaci.");
-            try {
-              var scopes = ["username", "payments"];
-              var auth = await Pi.authenticate(scopes, function (payment) {
-                alert("Neúplná platba, zkus znovu nebo kontaktuj admina.");
-                console.log("Neúplná platba:", payment);
-              });
+    document.getElementById("btn-pay").onclick = async function () {
+      if (!window.Pi) {
+        alert("Pi SDK není dostupné!");
+        return;
+      }
+      try {
+        // 1) Autentizace
+        const scopes = ["payments", "username"];
+        const auth = await Pi.authenticate(scopes, function (payment) {
+          alert("Neúplná platba: " + JSON.stringify(payment));
+        });
 
-              if (!auth || !auth.accessToken) {
-                alert("Chybí accessToken – přihlášení selhalo.");
-                return;
-              }
-              alert("Autentizace OK: " + auth.user.username);
-
-              var paymentData = {
-                amount: 5,
-                memo: "Test platba 5 Pi",
-                metadata: { topup: true }
-              };
-
-              var paymentCallbacks = {
-                onReadyForServerApproval: function (paymentId) {
-                  alert("Platba připravena ke schválení: " + paymentId);
-                  return axios.post("https://backend-production-9cdf.up.railway.app/approve", { paymentId: paymentId })
-                    .then(function (res) {
-                      alert("Backend /approve OK: " + JSON.stringify(res.data));
-                      return res.data;
-                    })
-                    .catch(function (err) {
-                      alert("Chyba při schválení: " + err.message);
-                      throw err;
-                    });
-                },
-                onReadyForServerCompletion: function (paymentId, txid) {
-                  alert("Platba potvrzena na blockchainu! paymentId: " + paymentId + " txid: " + txid);
-                  return axios.post("https://backend-production-9cdf.up.railway.app/complete", { paymentId: paymentId, txid: txid })
-                    .then(function (res) {
-                      alert("Backend /complete OK: " + JSON.stringify(res.data));
-                      return res.data;
-                    })
-                    .catch(function (err) {
-                      alert("Chyba při potvrzení: " + err.message);
-                      throw err;
-                    });
-                },
-                onCancel: function () {
-                  alert("Platba zrušena uživatelem.");
-                },
-                onError: function (err) {
-                  alert("Chyba platby: " + err.message);
-                }
-              };
-
-              alert("Volám Pi.createPayment!");
-              await Pi.createPayment(paymentData, paymentCallbacks);
-
-            } catch (e) {
-              alert("Chyba: " + e.message);
-              console.error(e);
-            }
-          };
-
+        if (!auth || !auth.accessToken || !auth.user) {
+          alert("Chyba při autentizaci!");
+          return;
         }
-      }, 100);
-    });
+        alert("Autentizace OK: " + auth.user.username);
+
+        // 2) Spuštění platby
+        const paymentData = {
+          amount: 5,
+          memo: "Top up 600 tokens",
+          metadata: { type: "topup", amount: 600 }
+        };
+
+        alert("Volám Pi.createPayment!");
+        await Pi.createPayment(paymentData, {
+          onReadyForServerApproval: function (paymentId) {
+            alert("Platba připravena ke schválení: " + paymentId);
+            fetch(backendUrl + "/approve", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId: paymentId })
+            })
+            .then(res => res.json())
+            .then(data => alert("Backend /approve OK: " + JSON.stringify(data)))
+            .catch(err => alert("Backend /approve ERR: " + err));
+          },
+          onReadyForServerCompletion: function (paymentId, txid) {
+            alert("Platba potvrzena Pi Networkem! paymentId: " + paymentId + ", txid: " + txid);
+            fetch(backendUrl + "/complete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId: paymentId, txid: txid })
+            })
+            .then(res => res.json())
+            .then(data => alert("Backend /complete OK: " + JSON.stringify(data)))
+            .catch(err => alert("Backend /complete ERR: " + err));
+          },
+          onCancel: function () {
+            alert("Platba zrušena uživatelem!");
+          },
+          onError: function (err) {
+            alert("Chyba v platbě: " + (err && err.message ? err.message : err));
+          }
+        });
+      } catch (e) {
+        alert("Chyba ve flow: " + (e && e.message ? e.message : e));
+      }
+    };
   </script>
 </body>
 </html>
