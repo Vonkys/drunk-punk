@@ -1,37 +1,72 @@
-<button onclick="pay()">Zaplatit 3.14 Test-Pi</button>
-<script src="https://sdk.minepi.com/pi-sdk.js"></script>
-<script>
-  Pi.init({ version: "2.0", sandbox: true });
-  function pay() {
-    Pi.authenticate(["username", "payments"], (payment) => { alert("Nedokončená platba: " + JSON.stringify(payment)); })
-    .then(auth => {
-      alert("AUTH OK " + JSON.stringify(auth));
-      return Pi.createPayment({
-        amount: 3.14,
-        memo: "test",
-        metadata: { type: "test" }
-      }, {
-        onReadyForServerApproval: function(paymentId) {
-          alert("APPROVE " + paymentId);
-          // tvůj backend /approve
-          fetch("https://backend-production-9cdf.up.railway.app/approve", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paymentId: paymentId })
-          }).then(x => x.json()).then(d => alert("BACKEND APPROVE: " + JSON.stringify(d)));
-        },
-        onReadyForServerCompletion: function(paymentId, txid) {
-          alert("COMPLETE " + paymentId + " txid: " + txid);
-          fetch("https://backend-production-9cdf.up.railway.app/complete", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ paymentId: paymentId, txid: txid })
-          }).then(x => x.json()).then(d => alert("BACKEND COMPLETE: " + JSON.stringify(d)));
-        },
-        onCancel: function() { alert("CANCEL"); },
-        onError: function(err) { alert("ERROR: " + (err && err.message ? err.message : err)); }
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pi platba – test</title>
+</head>
+<body>
+  <button id="btn-pay" style="font-size: 24px; padding: 20px; margin: 30px;">Zaplatit 3.14 Test-Pi</button>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script>
+    // Pi SDK init - nezapomeň na to!
+    Pi.init({ version: "2.0", sandbox: true });
+
+    var backendUrl = "https://backend-production-9cdf.up.railway.app";
+
+    document.getElementById("btn-pay").onclick = function () {
+      if (!window.Pi) {
+        alert("Pi SDK není dostupné!");
+        return;
+      }
+      Pi.authenticate(["username", "payments"], function(payment) {
+        alert("Neúplná platba: " + JSON.stringify(payment));
+      })
+      .then(function(auth) {
+        if (!auth || !auth.accessToken || !auth.user) {
+          alert("Chyba při autentizaci!");
+          return;
+        }
+        alert("Autentizace OK: " + auth.user.username);
+        var paymentData = {
+          amount: 3.14,
+          memo: "test-platba",
+          metadata: { type: "test" }
+        };
+        alert("Volám Pi.createPayment!");
+        Pi.createPayment(paymentData, {
+          onReadyForServerApproval: function(paymentId) {
+            alert("Platba připravena ke schválení: " + paymentId);
+            fetch(backendUrl + "/approve", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId: paymentId })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { alert("Backend /approve OK: " + JSON.stringify(data)); })
+            .catch(function(err) { alert("Backend /approve ERR: " + err); });
+          },
+          onReadyForServerCompletion: function(paymentId, txid) {
+            alert("Platba potvrzena Pi Networkem! paymentId: " + paymentId + ", txid: " + txid);
+            fetch(backendUrl + "/complete", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ paymentId: paymentId, txid: txid })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { alert("Backend /complete OK: " + JSON.stringify(data)); })
+            .catch(function(err) { alert("Backend /complete ERR: " + err); });
+          },
+          onCancel: function () {
+            alert("Platba zrušena uživatelem!");
+          },
+          onError: function (err) {
+            alert("Chyba v platbě: " + (err && err.message ? err.message : err));
+          }
+        });
+      })
+      .catch(function(e) {
+        alert("Chyba ve flow: " + (e && e.message ? e.message : e));
       });
-    })
-    .catch(err => alert("AUTH FAIL: " + (err && err.message ? err.message : err)));
-  }
-</script>
+    }
+  </script>
+</body>
+</html>
