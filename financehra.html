@@ -5,6 +5,7 @@
   <title>Drunk - Punk</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8f8fa; margin: 0; padding: 0; }
     h1 { text-align: center; color: #208278; margin-top: 80px; }
@@ -402,18 +403,75 @@ function renderZvirataList() {
 // Zpráva
 function showMsg(msg) {
   document.getElementById("msg").textContent = msg;
-  setTimeout(()=>document.getElementById("msg").textContent="",1800);
+  setTimeout(function () {
+    document.getElementById("msg").textContent = "";
+  }, 1800);
 }
-document.getElementById("btn-dobit-pi").onclick = function() {
-  var heslo = prompt("Enter password to top up PI tokens:");
-  if (heslo === "1893") {  // sem dej své tajné heslo!
-    setPi(getPi() + 600);
-    alert("600 PI added!");
-  } else {
-    alert("Wrong password!");
+
+document.getElementById("btn-dobit-pi").onclick = async function () {
+  if (!window.Pi) {
+    alert("Pi SDK není dostupné! Otevři stránku v Pi Browseru.");
+    return;
+  }
+  var backendUrl = "https://backend-production-9cdf.up.railway.app";
+  try {
+    const scopes = ["payments", "username"];
+    const auth = await Pi.authenticate(scopes, function (payment) {
+      alert("Neúplná platba: " + JSON.stringify(payment));
+    });
+
+    if (!auth || !auth.accessToken || !auth.user) {
+      alert("Chyba při autentizaci!");
+      return;
+    }
+
+    const paymentData = {
+      amount: 5,
+      memo: "Top up 600 tokens",
+      metadata: { type: "topup", amount: 600 }
+    };
+
+    Pi.createPayment(paymentData, {
+      onReadyForServerApproval: function (paymentId) {
+        fetch(backendUrl + "/approve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentId: paymentId })
+        })
+        .then(function(res){ return res.json(); })
+        .then(function(data){
+          // schváleno, čekáme na finish
+        })
+        .catch(function(err){
+          alert("Backend /approve ERR: " + err);
+        });
+      },
+      onReadyForServerCompletion: function (paymentId, txid) {
+        fetch(backendUrl + "/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentId: paymentId, txid: txid })
+        })
+        .then(function(res){ return res.json(); })
+        .then(function(data){
+          setPi(getPi() + 600);
+          alert("600 PI added! 🎉");
+        })
+        .catch(function(err){
+          alert("Backend /complete ERR: " + err);
+        });
+      },
+      onCancel: function (paymentId) {
+        alert("Platba zrušena uživatelem!");
+      },
+      onError: function (err, payment) {
+        alert("Chyba v platbě: " + (err && err.message ? err.message : err));
+      }
+    });
+  } catch (e) {
+    alert("Chyba ve flow: " + (e && e.message ? e.message : e));
   }
 };
-
 
 renderSellList();
 initDailyLogin();
