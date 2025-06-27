@@ -7,8 +7,16 @@
   <button id="btn-pay">Zaplatit 5 Pi</button>
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
   <script>
-    // Tvoje railway backend adresa
+    // Backend adresa
     var backendUrl = "https://backend-production-9cdf.up.railway.app";
+
+    // INIT Pi SDK! MUSÍ být jako první, jinak nic dál nefunguje.
+    if (window.Pi) {
+      Pi.init({
+        version: "2.0", // nebo jinou dle dokumentace, ale 2.0 funguje
+        sandbox: false  // true = testnet, false = mainnet
+      });
+    }
 
     document.getElementById("btn-pay").onclick = async function () {
       if (!window.Pi) {
