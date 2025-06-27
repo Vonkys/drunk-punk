@@ -6,6 +6,13 @@
   <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script>
+    if (window.Pi) {
+      Pi.init({ version: "2.0" });
+    } else {
+      console.warn("Pi SDK nebyl načten!");
+    }
+  </script>
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8f8fa; margin: 0; padding: 0; }
     h1 { text-align: center; color: #208278; margin-top: 80px; }
