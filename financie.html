@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pi platba - TEST</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <button id="btn-pi-pay">Zaplatit 5 Pi</button>
+    <script>
+      document.getElementById("btn-pi-pay").onclick = async function () {
+        alert("Klik! Jdeme na autentizaci...");
+        if (!window.Pi) return alert("Pi SDK není načteno!");
+
+        try {
+          var scopes = ["username", "payments", "wallet_address"];
+          alert("Autentizace...");
+          var auth = await Pi.authenticate(scopes, function (payment) {
+            alert("Incomplete payment handler: " + JSON.stringify(payment));
+          });
+
+          alert("Auth OK: " + JSON.stringify(auth));
+          if (!auth || !auth.accessToken) return alert("No access token!");
+
+          var paymentData = {
+            amount: 5,
+            memo: "test platba",
+            metadata: { test: true }
+          };
+
+          alert("Volám Pi.createPayment");
+          await Pi.createPayment(paymentData, {
+            onReadyForServerApproval: function (paymentId) {
+              alert("onReadyForServerApproval " + paymentId);
+              // Volá backend approve
+              return axios.post("https://backend-production-9cdf.up.railway.app/approve", { paymentId: paymentId });
+            },
+            onReadyForServerCompletion: function (paymentId, txid) {
+              alert("onReadyForServerCompletion " + paymentId + " txid=" + txid);
+              // Volá backend complete
+              return axios.post("https://backend-production-9cdf.up.railway.app/complete", { paymentId: paymentId, txid: txid });
+            },
+            onCancel: function (paymentId) {
+              alert("onCancel " + paymentId);
+            },
+            onError: function (error, payment) {
+              alert("onError: " + error.message);
+            }
+          });
+
+          alert("Konec try bloku, platba by měla proběhnout.");
+        } catch (e) {
+          alert("Exception: " + e.message);
+        }
+      };
+    </script>
+  </body>
+</html>
