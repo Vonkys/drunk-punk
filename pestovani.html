@@ -523,7 +523,7 @@ function renderFarm() {
         </div>
         ${(plot.growing && plot.grow < cropsData[plot.crop].growTime) 
           ? `<div style="font-size:.94em;color:#2b4e1d;margin-top:3px;">
-              ⏱ ${formatTime(cropsData[plot.crop].growTime - plot.grow)}
+              ⏰ ${formatTime(cropsData[plot.crop].growTime - plot.grow)}
             </div>` : ""}`;
       if (!plot.growing && plot.grow >= cropsData[plot.crop].growTime) {
         const btn = document.createElement("button");
