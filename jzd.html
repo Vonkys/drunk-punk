@@ -164,7 +164,7 @@ if (!localStorage.getItem("lihobaronPauseFeedingUntil")) {
 var sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
 var animals = JSON.parse(localStorage.getItem("lihobaronZvirata") || "[]");
 
-if (!localStorage.getItem("lihobaronFarmCoins")) localStorage.setItem("lihobaronFarmCoins", "200");
+
 if (sklad["pšenice"] == null) sklad["pšenice"] = 0;
 localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
 
