@@ -231,7 +231,7 @@
   var user = localStorage.getItem(piUserKey);
   var el = document.getElementById("pi-user-info");
   if (user) {
-    el.innerHTML = "✅ Player name: " + user;
+    el.innerHTML = "✅ Player: " + user;
     document.getElementById("btn-pi-login").style.display = "none";
     // Custom modal upozornění – jen po čerstvém loginu
     if (!sessionStorage.getItem("alreadyWarnedSave")) {
