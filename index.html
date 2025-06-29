@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drunk - Punk</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <meta name="theme-color" content="#208278">
+    <!-- Firebase knihovny -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #fffbe6 0%, #e1d9c5 100%);
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .reset-link {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 0.9em;
+            color: #777;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .title {
+            font-size: 2.5em;
+            margin-top: 30px;
+            letter-spacing: 2px;
+            color: #593e2c;
+            text-shadow: 0 2px 8px #f3e0b9;
+        }
+        .subtitle {
+            margin-top: 5px;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+            color: #917a53;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .cards {
+            display: flex;
+            justify-content: center;
+            gap: 35px;
+            flex-wrap: wrap;
+        }
+        .card {
+            width: 220px;
+            border-radius: 18px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.09), 0 1.5px 5px rgba(0,0,0,0.07);
+            padding: 32px 16px 24px 16px;
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            font-size: 1.18em;
+            margin-bottom: 40px;
+        }
+        .card:hover {
+            transform: translateY(-8px) scale(1.06);
+            box-shadow: 0 18px 36px rgba(0,0,0,0.18), 0 2.5px 10px rgba(0,0,0,0.11);
+        }
+        .pestovani {background: linear-gradient(135deg, #7bb661 0%, #a0e370 100%);}
+        .vyroba {background: linear-gradient(135deg, #d28f49 0%, #f4a261 100%);}
+        .jzd {background: linear-gradient(135deg, #a1c95a 0%, #e8e658 100%);}
+        .finance {background: linear-gradient(135deg, #27787a 0%, #3ec6b5 100%);}
+        .sklad {background: linear-gradient(135deg, #6e44ff 0%, #b892ff 100%);}
+        .card-emoji {font-size: 3em; margin-bottom: 14px; text-shadow: 0 3px 8px rgba(50,30,10,0.18);}
+        .card-title {font-size: 1.25em; font-weight: bold; margin-bottom: 6px; letter-spacing: 1px;}
+        .card.hospoda {background: #195529 !important; border: 2px solid #e1ffab;}
+        .card.hotel {background: #203669 !important; border: 2px solid #bee7ff;}
+        .card.market {background: #69204c !important; border: 2px solid #bee7ff;}
+        .card-desc {font-size: 1em; opacity: 0.9;}
+        .okurka-help-row {
+            position: absolute; top: 15px; left: 22px; z-index: 1200; display: flex; align-items: center;
+            font-size: 1.17em; font-weight: bold; color: #226e29;
+        }
+        .okurka-btn {
+            display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; margin-left: 13px;
+            background: #fffbe6; border: 2px solid #d4a939; border-radius: 8px; box-shadow: 0 2px 7px #c0ab6e55;
+            font-size: 1.45em; font-weight: bold; color: #b17f05; text-decoration: none; transition: background 0.18s, box-shadow 0.13s, border-color 0.13s; cursor: pointer;
+        }
+        .okurka-btn:hover {background: #ffedbb; border-color: #f1b000; box-shadow: 0 4px 12px #f1d97d99;}
+        @media (max-width:600px) {
+            .okurka-help-row {flex-direction: column; align-items: flex-start; top: 8px !important; left: 8px !important; font-size: 1.07em !important;}
+            .okurka-btn {margin: 6px 0 0 0 !important; width: 38px !important; height: 38px !important; font-size: 1.48em !important;}
+        }
+        #logoutBtn { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); background:#e1d9c5; color:#693e2c; border:1px solid #ccc; border-radius:7px; padding:7px 15px; font-weight:bold; cursor:pointer; display:none;}
+        #saveCloudBtn, #loadCloudBtn {
+            margin: 16px 7px 0 7px;
+            background: #27787a;
+            color: #fff;
+            font-size: 1.08em;
+            padding: 9px 26px;
+            border: none;
+            border-radius: 11px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 10px #27787a33;
+            transition: background 0.2s;
+        }
+        #saveCloudBtn:hover, #loadCloudBtn:hover {
+            background: #379e9a;
+        }
+        #cloudMsg { margin-top: 10px; color: #13536b; font-weight: bold;}
+    </style>
+</head>
+<body>
+<div class="okurka-help-row">
+  <a href="napoveda.html" title="Help" class="okurka-btn">❓</a>
+</div>
+
+<!-- LOGIN box -->
+<div id="loginBox" style="margin-top:30px;">
+  <input type="email" id="loginEmail" placeholder="Email" style="padding:8px; margin:6px;">
+  <input type="password" id="loginPassword" placeholder="Heslo" style="padding:8px; margin:6px;">
+  <button onclick="loginFirebase()">Přihlásit</button>
+  <button onclick="registerFirebase()">Registrovat</button>
+  <div id="loginMsg" style="color:#b70000; margin-top:8px;"></div>
+</div>
+
+<!-- LOGOUT tlačítko -->
+<button id="logoutBtn" onclick="logoutFirebase()">Odhlásit</button>
+
+<!-- CLOUD tlačítka a hlášení -->
+<div id="cloudControls" style="display:none;">
+  <button id="saveCloudBtn" onclick="saveLocalStorageToCloud()">ULOŽIT HRU DO CLOUDU</button>
+  <button id="loadCloudBtn" onclick="loadLocalStorageFromCloud()">NAČÍST HRU Z CLOUDU</button>
+  <div id="cloudMsg"></div>
+</div>
+
+<!-- Celý obsah hry -->
+<div id="gameContent" style="display:none;">
+  <div class="reset-link" onclick="resetGame()" style="font-weight: bold;">🔄 Reset game</div>
+  <div style="position: absolute; top: 40px; right: 20px; font-size: 0.85em; color: #555; font-weight: bold;">
+    🕵 We track visits
+  </div>
+  <b><div class="title" style="margin-top: 80px;">🍻 Drunk - Punk</div></b>
+  <div class="subtitle">A farming, brewing & booze-battle sim… Are you the king of liquor and beer?</div>
+  <div class="cards">
+    <div class="card pestovani" onclick="window.location.href='pestovani.html'">
+      <div class="card-emoji">🌾🍇</div>
+      <div class="card-title">Farming</div>
+      <div class="card-desc">Hopfields, wheat & potato fields, sugarcane, orchards (plums, pears…)</div>
+    </div>
+    <div class="card vyroba" onclick="window.location.href='vyroba.html'">
+      <div class="card-emoji">⚗️🍻</div>
+      <div class="card-title">Production</div>
+      <div class="card-desc">Beer brewing, fermentation, distilling, tanks and moonshine rigs</div>
+    </div>
+    <div class="card jzd" onclick="window.location.href='jzd.html'">
+      <div class="card-emoji">🐮</div>
+      <div class="card-title">Farm Co-op</div>
+      <div class="card-desc">Animals, manure, milk, eggs, meat… Buy & feed ‘em before your cow drops dead!</div>
+    </div>
+    <div class="card finance" onclick="window.location.href='finance.html'">
+      <div class="card-emoji">💰📈</div>
+      <div class="card-title">Finance</div>
+      <div class="card-desc">Profit, investments, costs, market trends – run your biz right!</div>
+    </div>
+    <div class="card sklad" onclick="window.location.href='sklad.html'">
+      <div class="card-emoji">📦🧺</div>
+      <div class="card-title">Storage</div>
+      <div class="card-desc">Seeds, harvested stuff, finished booze – all in one spot.</div>
+    </div>
+    <div class="card hospoda" onclick="window.location.href='pub.html'">
+      <div class="card-emoji">🍺</div>
+      <div class="card-title">Pub</div>
+      <div class="card-desc">Guest orders, Friday specials – deliver & cash in!</div>
+    </div>
+    <div class="card hotel" onclick="window.location.href='hotel.html'">
+      <div class="card-emoji">🏨</div>
+      <div class="card-title">Hotel</div>
+      <div class="card-desc">Weddings, corporate parties, mega orders – for hardcore distillers only!</div>
+    </div>
+    <div class="card market" onclick="window.location.href='market.html'">
+      <div class="card-emoji">🏪</div>
+      <div class="card-title">Market</div>
+      <div class="card-desc">Customer orders, booze sales – supply & make money!</div>
+    </div>
+  </div>
+</div>
+
+<script>
+    function resetGame() {
+        if (confirm("Are you sure you want to reset the game? All data will be wiped.")) {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+</script>
+
+<!-- Firebase config a přihlášení -->
+<script>
+  // ---- DOPLŇ SI SVÉ HODNOTY! ----
+  const firebaseConfig = {
+    apiKey: "AIzaSyCfPJJL8cbfxmpWpHG5_icQOZjzGWSpeZI",
+    authDomain: "drunk-punk.firebaseapp.com",
+    projectId: "drunk-punk",
+    storageBucket: "drunk-punk.firebasestorage.app",
+    messagingSenderId: "749798531604",
+    appId: "1:749798531604:web:9e702aee7c9a2599627d01",
+    measurementId: "G-JSFRP622EL"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const firestore = firebase.firestore();
+
+  function showGame(logged) {
+    document.getElementById("loginBox").style.display = logged ? "none" : "block";
+    document.getElementById("gameContent").style.display = logged ? "block" : "none";
+    document.getElementById("logoutBtn").style.display = logged ? "block" : "none";
+    document.getElementById("cloudControls").style.display = logged ? "block" : "none";
+    if (!logged) {
+      document.getElementById("loginMsg").innerText = "";
+      document.getElementById("loginEmail").value = "";
+      document.getElementById("loginPassword").value = "";
+      document.getElementById("cloudMsg").innerText = "";
+    }
+  }
+
+  function loginFirebase() {
+    var email = document.getElementById("loginEmail").value.trim();
+    var password = document.getElementById("loginPassword").value;
+    firebase.auth().signInWithEmailAndPassword(email, password)
+      .then(function(user) {
+        showGame(true);
+      })
+      .catch(function(error) {
+        document.getElementById("loginMsg").innerText = "Chyba: " + error.message;
+      });
+  }
+
+  function registerFirebase() {
+    var email = document.getElementById("loginEmail").value.trim();
+    var password = document.getElementById("loginPassword").value;
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+      .then(function(user) {
+        showGame(true);
+      })
+      .catch(function(error) {
+        document.getElementById("loginMsg").innerText = "Registrace: " + error.message;
+      });
+  }
+
+  function logoutFirebase() {
+    firebase.auth().signOut().then(function() {
+      showGame(false);
+    });
+  }
+
+  // Uloží celý localStorage do Firestore
+  function saveLocalStorageToCloud() {
+    var user = firebase.auth().currentUser;
+    if (!user) {
+      document.getElementById("cloudMsg").innerText = "Musíš být přihlášený!";
+      return;
+    }
+    // Převést celý localStorage na objekt
+    var data = {};
+    for (var i = 0; i < localStorage.length; i++) {
+      var key = localStorage.key(i);
+      data[key] = localStorage.getItem(key);
+    }
+    firestore.collection("saves").doc(user.uid).set({
+      data: data,
+      savedAt: new Date().toISOString()
+    }).then(function() {
+      document.getElementById("cloudMsg").innerText = "✅ Hra byla uložena do cloudu!";
+    }).catch(function(error) {
+      document.getElementById("cloudMsg").innerText = "Chyba ukládání: " + error.message;
+    });
+  }
+
+  // Načte celý localStorage z Firestore a uloží ho zpět do localStorage
+  function loadLocalStorageFromCloud() {
+    var user = firebase.auth().currentUser;
+    if (!user) {
+      document.getElementById("cloudMsg").innerText = "Musíš být přihlášený!";
+      return;
+    }
+    firestore.collection("saves").doc(user.uid).get().then(function(doc) {
+      if (doc.exists && doc.data().data) {
+        var data = doc.data().data;
+        // Přepsat localStorage
+        for (var k in data) {
+          localStorage.setItem(k, data[k]);
+        }
+        document.getElementById("cloudMsg").innerText = "✅ Hra načtena z cloudu! (obnov stránku)";
+      } else {
+        document.getElementById("cloudMsg").innerText = "V cloudu není žádný save.";
+      }
+    }).catch(function(error) {
+      document.getElementById("cloudMsg").innerText = "Chyba načítání: " + error.message;
+    });
+  }
+
+  // Sleduj stav přihlášení!
+  firebase.auth().onAuthStateChanged(function(user) {
+    showGame(!!user);
+  });
+</script>
+</body>
+</html>
