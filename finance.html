@@ -346,6 +346,8 @@ function sell(idx) {
   let sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
   let item = items[idx];
   if ((sklad[item.key]||0) < 1) { showMsg("Nothing to sell!"); return; }
+  // Přidat confirm:
+  if (!confirm("Are you sure you want to sell 1× " + item.label + "?")) return;
   sklad[item.key]--;
   localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
   let coins = getMoney() + prices[item.key];
@@ -353,11 +355,14 @@ function sell(idx) {
   showMsg(`Sold 1× ${item.label} for ${prices[item.key]} $`);
   renderSellList();
 }
+
 function sellAll(idx) {
   let sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
   let item = items[idx];
   let count = sklad[item.key]||0;
   if (count < 1) { showMsg("Nothing to sell!"); return; }
+  // Přidat confirm:
+  if (!confirm("Are you sure you want to SELL ALL (" + count + "× " + item.label + ")? This cannot be undone.")) return;
   sklad[item.key]=0;
   localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
   let coins = getMoney() + prices[item.key]*count;
@@ -365,6 +370,7 @@ function sellAll(idx) {
   showMsg(`Sell ${count}× ${item.label} for ${prices[item.key]*count} $`);
   renderSellList();
 }
+
 
 // === Prodej zvířat (nová sekce pod výrobky) ===
 
@@ -376,6 +382,8 @@ function prodatZvire(typ) {
   let animals = JSON.parse(localStorage.getItem("lihobaronZvirata") || "[]");
   let idx = animals.findIndex(z => z.typ === typ && !z.mrtve);
   if (idx > -1) {
+    // Potvrzení pro prodej zvířete
+    if (!confirm("Are you sure you want to sell 1× " + animalDefs[typ].nazev + "?")) return;
     animals.splice(idx, 1);
     localStorage.setItem("lihobaronZvirata", JSON.stringify(animals));
     let coins = getMoney() + animalDefs[typ].cena;
@@ -386,6 +394,7 @@ function prodatZvire(typ) {
     showMsg("No animal to sell!");
   }
 }
+
 function renderZvirataList() {
   let html = "";
   Object.keys(animalDefs).forEach(key => {
