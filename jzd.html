@@ -147,29 +147,35 @@ if (!localStorage.getItem("lihobaronFarmSeeds")) {
     okurky: 0, třešně: 0, cibule: 0, česnek: 0, jahody: 0
   }));
 }
-if (!localStorage.getItem("lihobaronFarmXP")) {
-  localStorage.setItem("lihobaronFarmXP", 0);
+if (localStorage.getItem("lihobaronFarmXP") === null) {
+  localStorage.setItem("lihobaronFarmXP", "0");
 }
-if (!localStorage.getItem("lihobaronFarmCoins")) {
-  localStorage.setItem("lihobaronFarmCoins", 200);
+
+if (localStorage.getItem("lihobaronFarmCoins") === null) {
+  localStorage.setItem("lihobaronFarmCoins", "200");
 }
-if (!localStorage.getItem("lihobaronPi")) {
-  localStorage.setItem("lihobaronPi", 200);
+
+if (localStorage.getItem("lihobaronPi") === null) {
+  localStorage.setItem("lihobaronPi", "200");
 }
-// -- PAUZA ZIVENI --
-if (!localStorage.getItem("lihobaronPauseFeedingUntil")) {
+
+// -- PAUZA ZIVĚNÍ --
+if (localStorage.getItem("lihobaronPauseFeedingUntil") === null) {
   localStorage.setItem("lihobaronPauseFeedingUntil", "0");
 }
 
+// Nahrání skladu a zvířat
 var sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
 var animals = JSON.parse(localStorage.getItem("lihobaronZvirata") || "[]");
 
-
+// Inicializace pšenice, pokud chybí
 if (sklad["pšenice"] == null) sklad["pšenice"] = 0;
 localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
 
-var coins = +localStorage.getItem("lihobaronFarmCoins") || 200;
+// Čtení coinů (už se nenastavuje defaultně)
+var coins = +localStorage.getItem("lihobaronFarmCoins");
 var krmInterval = 1 * 60 * 60 * 1000; // 1 hodina
+
 
 var animalDefs = {
   slepice: { emoji: "🐔", jmeno: "Hen", cena: 100, produkty: [
