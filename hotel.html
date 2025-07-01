@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<title>Drunk - Punk</title>
+ <link rel="icon" href="favicon.ico" type="image/x-icon" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8f8fa; margin: 0; padding: 0; padding-top: 48px;}
+    .nav-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      background: #2196f3;
+      color: white;
+      display: flex;
+      justify-content: flex-end;
+      gap: 2px;
+      z-index: 1000;
+      box-shadow: 0 2px 8px #0002;
+      padding: 7px 0;
+    }
+    h1 { text-align: center; color: #208278; margin-top: 30px; }
+    @media (max-width: 600px) {
+  h1 { margin-top: 70px;} /* nebo klidně 20px, uprav si podle oka */
+  }
+    .nav-link {
+      color: white;
+      padding: 7px 24px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.07em;
+      border-radius: 0 0 10px 10px;
+      transition: background 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .nav-link.active, .nav-link:hover {
+      background: #1760a3;
+    }
+    @media (max-width:520px) {
+      .nav-bar { font-size: 0.97em; }
+    }
+    @media (max-width:600px) {
+      .nav-bar { justify-content: center; flex-wrap: wrap; font-size: 0.97em; }
+      .nav-link { padding: 7px 8px; font-size: 1em;}
+    }
+    .placeholder-box {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 2px 16px #b7d9db35;
+      margin: 80px auto 0 auto;
+      padding: 36px 16px 30px 16px;
+      max-width: 410px;
+      text-align: center;
+    }
+    .placeholder-img {
+      font-size: 3.3em;
+      margin-bottom: 12px;
+      opacity: 0.92;
+    }
+    .placeholder-text {
+      color: #1e4185;
+      font-size: 1.35em;
+      font-weight: bold;
+      letter-spacing: 0.02em;
+      margin-top: 12px;
+    }
+   .nav-link-stats {
+      background: #e26e08 !important;  /* zlatá, nebo třeba #ff66a3, #a0e370, prostě něco co nikde jinde není */
+      color: #333 !important;
+      border-radius: 11px;
+      margin-left: 6px;
+     font-size: 1.32em;  /* větší emoji, ať to svítí */
+     box-shadow: 0 2px 10px #ffd70033;
+     border: 2.5px solid #fff;
+     filter: saturate(1.4) brightness(1.12);
+    }
+   .back-disketa {
+  position: fixed;
+  top: 65px; /* nebo 60px podle přesné výšky navigace! */
+  left: 10px;
+  font-size: 2em;
+  background: #22c55e;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  cursor: pointer;
+  padding: 0.08em 0.42em 0.13em 0.42em;
+  z-index: 2002;
+  transition: background 0.18s;
+  line-height: 1.1em;
+}
+
+.back-disketa:hover {
+  background: #16a34a;
+}
+@media (max-width:600px) {
+  .back-disketa {
+    top: 95px; /* pokud má navigace na mobilu větší výšku */
+    left: 10px;
+    font-size: 1.6em;
+    padding: 0.02em 0.33em 0.13em 0.33em;
+  }
+}
+ </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <a href="pestovani.html" class="nav-link">🌱 Grow Sh*t</a>
+<a href="vyroba.html" class="nav-link">⚗️ Brewing</a>
+<a href="jzd.html" class="nav-link">🐷 Coop</a>
+<a href="sklad.html" class="nav-link">📦 Stash</a>
+<a href="hotel.html" class="nav-link active">🏨 Motel</a>
+<a href="pub.html" class="nav-link">🏡 Bar</a>
+<a href="market.html" class="nav-link">🏪 Bazaar</a>
+<a href="finance.html" class="nav-link">💰 Wallet</a>
+<a class="nav-link nav-link-stats" href="statistiky.html">📊</a>  
+</div>
+<button class="back-disketa" onclick="window.location.href='index.html';" title="Zpět na index">
+  💾
+</button>
+<h1>🏨 Motel</h1>
+  <div class="placeholder-box">
+    <div class="placeholder-img">🏨</div>
+    <div class="placeholder-text">Motel coming soon. Don’t get too comfy yet! </div>
+  </div>
+</body>
+</html>
