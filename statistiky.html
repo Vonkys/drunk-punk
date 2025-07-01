@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>STATISTICS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background: linear-gradient(135deg, #fffbe6 0%, #e1d9c5 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0; padding: 0; min-height: 100vh;
+        }
+        .container {
+            max-width: 430px;
+            margin: 44px auto 0 auto;
+            background: #fffefb;
+            border-radius: 18px;
+            box-shadow: 0 3px 28px #0002, 0 1.5px 5px #0001;
+            padding: 30px 18px 28px 18px;
+            text-align: center;
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 2.5em;
+            color: #208278;
+            font-weight: 900;
+            letter-spacing: 1.7px;
+        }
+        .xp {
+            font-size: 1.35em;
+            color: #fff;
+            background: linear-gradient(90deg, #208278 70%, #ffc857 100%);
+            display: inline-block;
+            padding: 9px 26px;
+            border-radius: 14px;
+            margin: 8px 0 22px 0;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 12px #0002, 0 1px 3px #0001;
+            border: 2.3px solid #ffce80;
+            text-shadow: 0 1px 0 #fff8, 0 2px 6px #3332;
+        }
+        .stats-list {
+            margin: 18px 0 0 0;
+            text-align: left;
+            display: inline-block;
+            min-width: 180px;
+        }
+        .crop-row {
+            font-size: 1.18em;
+            margin-bottom: 7px;
+            color: #4c3932;
+        }
+        .crop-emoji {
+            margin-right: 7px;
+            font-size: 1.15em;
+        }
+        .back-btn {
+           margin: 0 auto 18px auto;
+           padding: 13px 34px;
+           font-size: 1.14em;
+           font-weight: bold;
+           color: #fff;
+           background: #208278;
+           border: none;
+           border-radius: 9px;
+           cursor: pointer;
+           box-shadow: 0 2px 9px #0001;
+           transition: background 0.15s;
+           display: block;
+        }
+        .back-btn:hover {
+            background: #175c5d;
+        }
+        h2 {
+            margin: 14px 0 7px 0;
+            font-size: 1.27em;
+            color: #208278;
+            text-align: left;
+        }
+        .animal-head { color: #784f08; }
+        .orders-head { color: #b46408; }
+        .level-easy { color: #22a324; font-weight:bold;}
+        .level-medium { color: #327fc4; font-weight:bold;}
+        .level-hard { color: #e38b10; font-weight:bold;}
+        .level-extreme { color: #d40000; font-weight:bold;}
+        .orders-total { color: #888; font-size:0.96em;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>STATISTICS</h1>
+        <button class="back-btn" onclick="window.location.href='pestovani.html'">⬅️ Back</button>
+        <div id="xp" class="xp">XP: ...</div>
+
+        <div style="margin-bottom:15px;">
+            <h2>🌱 Crops</h2>
+            <div id="stats-crops" class="stats-list"></div>
+        </div>
+        <div>
+            <h2 class="animal-head">🐮 Animal Products</h2>
+            <div id="stats-animal" class="stats-list"></div>
+        </div>
+        <div style="margin-top:20px;">
+            <h2 class="orders-head">🧑‍🌾 Orders</h2>
+            <div id="orders-stats" class="stats-list"></div>
+        </div>
+    </div>
+    <script>
+    // --- Crops data
+    var cropsData = {
+        "pšenice": {emoji: "🌾", display:"Wheat"},
+        "chmel": {emoji: "🍃", display:"Hop"},
+        "kukuřice": {emoji: "🌽", display:"Corn"},
+        "mrkev": {emoji: "🥕", display:"Carrot"},
+        "brambora": {emoji: "🥔", display:"Potato"},
+        "rajčata": {emoji: "🍅", display:"Tomato"},
+        "chilli": {emoji: "🌶", display:"Chilli"},
+        "okurky": {emoji: "🥒", display:"Cucumber"},
+        "třešně": {emoji: "🍒", display:"Cherries"},
+        "cibule": {emoji: "🧅", display:"Onion"},
+        "česnek": {emoji: "🧄", display:"Garlic"},
+        "jahody": {emoji: "🍓", display:"Strawberry"},
+        "reva": {emoji: "🍇", display:"Grapes"},
+        "jablko": {emoji: "🍎", display:"Apple"},
+        "hruška": {emoji: "🍐", display:"Pear"},
+        "švestka": {emoji: "🟣", display:"Plum"},
+        "meruňka": {emoji: "🍑", display:"Apricot"},
+        "broskev": {emoji: "🍊", display:"Peach"}
+    };
+    // --- Animal products data
+    var animalProductsData = {
+        "vejce": {emoji: "🥚", display: "Egg"},
+        "krůtí_maso": {emoji: "🍗", display: "Turkey meat"},
+        "mléko": {emoji: "🥛", display: "Milk"},
+        "kozí_mléko": {emoji: "🥛", display: "Goat milk"},
+        "šunka": {emoji: "🍖", display: "Ham"},
+        "kachní_vejce": {emoji: "🥚", display: "Duck egg"},
+        "med": {emoji: "🍯", display: "Honey"},
+        "vlna": {emoji: "🧶", display: "Wool"},
+        "králičí_maso": {emoji: "🍖", display: "Rabbit meat"}
+    };
+
+    function formatXp(xp) {
+        if (xp >= 1e9) return (xp / 1e9).toFixed(1).replace(/\.0$/, "") + "B";
+        if (xp >= 1e6) return (xp / 1e6).toFixed(1).replace(/\.0$/, "") + "M";
+        if (xp >= 1e3) return (xp / 1e3).toFixed(1).replace(/\.0$/, "") + "k";
+        return xp;
+    }
+
+    // --- načti XP
+    var xp = parseInt(localStorage.getItem("lihobaronFarmXP") || "0");
+    document.getElementById("xp").textContent = "XP: " + formatXp(xp);
+
+    // --- načti statistiky sklizně (celkové množství)
+    var stats = localStorage.getItem("lihobaronStats");
+    var statsCropsDiv = document.getElementById("stats-crops");
+    var statsAnimalDiv = document.getElementById("stats-animal");
+    var hasCrops = false;
+    var hasAnimal = false;
+
+    if (stats) {
+        stats = JSON.parse(stats);
+
+        // Crops (Plants)
+Object.keys(cropsData).forEach(function(key) {
+    var count = stats[key] || 0;
+    if (count > 0) {
+        hasCrops = true;
+        statsCropsDiv.innerHTML +=
+            "<div class='crop-row'><span class='crop-emoji'>" + cropsData[key].emoji +
+            "</span>" + cropsData[key].display + ": <b>" + count + "</b></div>";
+    }
+});
+
+
+      // Animal Products
+Object.keys(animalProductsData).forEach(function(key) {
+    var count = stats[key] || 0;
+    if (count > 0) {
+        hasAnimal = true;
+        statsAnimalDiv.innerHTML +=
+            "<div class='crop-row'><span class='crop-emoji'>" + animalProductsData[key].emoji +
+            "</span>" + animalProductsData[key].display + ": <b>" + count + "</b></div>";
+    }
+});
+if (!hasAnimal) statsAnimalDiv.innerHTML = "<div style='color:#aaa;'>No animal products yet.</div>";
+    }
+
+   // --- načti statistiky zakázek (Orders) ---
+var ordersStats = localStorage.getItem("lihobaronStatsOrders");
+var ordersDiv = document.getElementById("orders-stats");
+
+if (ordersStats) {
+    ordersStats = JSON.parse(ordersStats);
+    var easy = 0, medium = 0, hard = 0, extreme = 0;
+    Object.keys(ordersStats).forEach(function(customer) {
+        var cust = ordersStats[customer];
+        if (cust.easy) easy += cust.easy;
+        if (cust.medium) medium += cust.medium;
+        if (cust.hard) hard += cust.hard;
+        if (cust.extreme) extreme += cust.extreme;
+    });
+    var total = easy + medium + hard + extreme;
+    var line = "";
+    line += "<span class='level-easy'>easy: <b>" + easy + "</b></span> ";
+    line += "<span class='level-medium'>medium: <b>" + medium + "</b></span> ";
+    line += "<span class='level-hard'>hard: <b>" + hard + "</b></span> ";
+    line += "<span class='level-extreme'>extreme: <b>" + extreme + "</b></span>";
+    // na další řádek dáme total
+    line += "<br><span class='orders-total'>(Total: "+total+")</span>";
+    ordersDiv.innerHTML = line;
+} else {
+    ordersDiv.innerHTML = "<div style='color:#a88;font-size:1.05em;'>No orders completed yet.</div>";
+}
+
+</script>
+
+</body>
+</html>
