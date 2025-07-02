@@ -153,7 +153,7 @@ firebase.auth().onAuthStateChanged(function(user) {
     showMsg("Přihlášen jako: " + (user.email || user.uid));
     // (Můžeš tu povolit tlačítka/save nebo vykreslit víc informací)
   } else {
-    showMsg("Nejsi přihlášen! Uložení bude fungovat až po přihlášení na hlavní stránce.");
+    showMsg("");
     // (Když chceš, můžeš schovat SAVE tlačítko: document.querySelector('.back-disketa').style.display='none';)
   }
 });
