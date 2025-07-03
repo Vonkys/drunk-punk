@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8"/>
+  <title>Drunk - Punk</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #fef6fa 0%, #e1fcff 100%);
+      margin: 0; padding: 0; text-align: center;
+    }
+    .nav-bar {
+      position: fixed;
+      top: 0; left: 0; width: 100vw;
+      background: #2196f3; color: white;
+      display: flex; justify-content: flex-end; gap: 2px;
+      z-index: 1000; box-shadow: 0 2px 8px #0002; padding: 7px 0;
+    }
+    .nav-link {
+      color: white; padding: 7px 24px; text-decoration: none;
+      font-weight: bold; font-size: 1.07em; border-radius: 0 0 10px 10px;
+      transition: background 0.18s; display: flex; align-items: center; gap: 6px;
+    }
+    .nav-link.active, .nav-link:hover { background: #1760a3; }
+    body { padding-top: 48px; }
+    .zpet-link {
+      display: inline-block;
+      margin: 20px 0 4px 0;
+      color: #1760a3;
+      background: #e9f6fd;
+      padding: 7px 17px;
+      border-radius: 9px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 1.08em;
+      box-shadow: 0 1px 8px #bbe8fd44;
+      transition: background 0.13s, color 0.13s;
+    }
+    .zpet-link:hover { background: #b7e0ed; color: #124061; }
+    h2 { margin: 16px 0 7px 0; color: #208278; font-size: 2.35em;}
+    .section {
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 2px 14px #b7d9db35;
+      display: inline-block;
+      margin: 14px auto 0 auto;
+      padding: 16px 17px 13px 17px;
+      min-width: 220px; max-width: 98vw; text-align: left;
+    }
+    .section-title { color: #217c5e; font-size: 1.13em; margin-bottom: 8px; font-weight: 700; letter-spacing: 1px; }
+    .status { color:#b24b4b; font-weight:600; margin-bottom:10px;}
+    .success { color:#217c5e; }
+    .prod-btn {
+      background: #37af7b; color: #fff; border: none;
+      border-radius: 7px; font-size: 1em; margin: 6px 0 10px 0;
+      padding: 5px 20px; cursor: pointer;
+    }
+    .prod-btn:hover { background: #136652; }
+    .prod-btn[disabled] { background: #9dbdae; cursor: not-allowed;}
+    .machines-list {margin-bottom:14px;}
+    .machines-list span {background:#e9dcb4;border-radius:7px;padding:5px 14px 4px 11px;font-size:1em;margin:0 7px 5px 0;display:inline-block;}
+    .need {color:#b24b4b;}
+    .has {color:#217c5e;}
+    .cards-flex {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 34px; margin-bottom: 6px;
+    }
+    .nav-link-stats {
+      background: #e26e08 !important;
+      color: #333 !important;
+      border-radius: 11px;
+      margin-left: 6px;
+      font-size: 1.32em;
+      box-shadow: 0 2px 10px #ffd70033;
+      border: 2.5px solid #fff;
+      filter: saturate(1.4) brightness(1.12);
+    }
+    .phase-card {
+      background: #f8fcf7; border-radius: 14px; box-shadow: 0 2px 12px #b7d9db33;
+      padding: 20px 23px 18px 23px; min-width: 230px; max-width: 340px;
+      margin: 6px 6px 0 6px; display: flex; flex-direction: column; align-items: center;
+      border-top: 7px solid #37af7b; transition: box-shadow .18s;
+    }
+    .phase-title { font-size: 1.17em; font-weight: 700; color: #136652; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 8px; }
+    .phase-icon { font-size: 2em; }
+    .phase-info { font-size: 1em; margin: 4px 0 7px 0;}
+    @media (max-width:900px) {
+      .cards-flex { flex-direction: column; align-items: center; gap: 14px;}
+      .phase-card { min-width: 220px; max-width: 99vw;}
+    }
+    @media (max-width:600px){
+      body { padding-top: 90px; }
+      .nav-bar { justify-content: center; flex-wrap: wrap; font-size: 0.97em; }
+      .nav-link { padding:7px 8px;font-size:1em; }
+      .section { padding:10px; }
+      h2 { font-size: 2.1em; }
+      .zpet-link { padding: 7px 6vw; font-size:1em;}
+    }
+  </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <a href="pestovani.html" class="nav-link">🌱 Grow Sh*t</a>
+    <a href="vyroba.html" class="nav-link active">⚗️ Brewing</a>
+    <a href="jzd.html" class="nav-link">🐷 Coop</a>
+    <a href="sklad.html" class="nav-link">📦 Stash</a>
+    <a href="hotel.html" class="nav-link">🏨 Motel</a>
+    <a href="pub.html" class="nav-link">🏡 Bar</a>
+    <a href="market.html" class="nav-link">🏪 Bazaar</a>
+    <a href="finance.html" class="nav-link">💰 Wallet</a>
+    <a class="nav-link nav-link-stats" href="statistiky.html">📊</a>
+  </div>
+  <a href="vyroba.html" class="zpet-link">← Zpět na výrobu</a>
+  <h2>🍞 Bakery</h2>
+  <div id="balances" style="text-align:center; margin: 10px 0; font-weight: bold; font-size: 1.2em;">
+    <b>💵 Balance: <span id="stavPrachy"></span><br>
+    🪙 PI Coins: <span id="pi-balance"></span></b> ϖ
+  </div>
+  <div class="section" id="machinesSection"></div>
+  <div class="cards-flex" id="pekarSection"></div>
+  <div class="section" id="vyrobaStatus"></div>
+  <script>
+function getPi() {
+  return JSON.parse(localStorage.getItem("lihobaronPi") || "0");
+}
+function renderPiBalance() {
+  document.getElementById("pi-balance").textContent = getPi();
+}
+function load(key, def) { try { let d=localStorage.getItem(key); if(!d)return def; return JSON.parse(d);}catch{return def;} }
+function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+function getMoney() { return load("lihobaronFarmCoins", 0);}
+function setMoney(m) { save("lihobaronFarmCoins", m);}
+function getSklad() { return load("lihobaronFarmStorage", {});}
+function setSklad(s) { save("lihobaronFarmStorage", s);}
+function stavPrachy() { document.getElementById("stavPrachy").innerText = getMoney()+" $"; }
+function vypisStatus(txt,ok){ let e=document.getElementById("vyrobaStatus"); e.innerHTML="<span class='"+(ok?"success":"status")+"'>"+txt+"</span>"; setTimeout(()=>{e.innerHTML='';},2300);}
+
+const BAKERY_MACHINES = [
+  { key: "water_tap", name: "Water Tap 🚰", price: 300 },
+  { key: "oven", name: "Oven 🍞", price: 2000000 }
+];
+
+const WATER_INTERVAL = 600000; // 2 min
+const DOUGH_INTERVAL = 300000; // 10 sekund na zadělání těsta
+
+window.doughInProgress = false;
+window.doughEndTime = 0;
+window.doughMixInterval = null;
+
+function renderBakeryMachinesShop() {
+  const machines = load("bakeryMachines", []);
+  let html = "<div class='section-title'>🛒 Machine shop</div>";
+  html += "<div class='machines-list'>";
+  BAKERY_MACHINES.forEach(m=>{
+    if (machines.includes(m.key)) {
+      html += "<span class='has'>" + m.name + " ✔️</span>";
+    } else {
+      html += "<span class='need'>" + m.name + " (" + m.price + " $) " +
+        "<button class='prod-btn' onclick=\"buyBakeryMachine('" + m.key + "'," + m.price + ")\">Buy</button></span>";
+    }
+  });
+  html += "</div>";
+  document.getElementById("machinesSection").innerHTML = html;
+}
+
+function buyBakeryMachine(key, price) {
+  let machines = load("bakeryMachines", []);
+  let money = getMoney();
+  if (machines.includes(key)) { vypisStatus("You already got this machine!",0); return; }
+  if (money < price) { alert("Not enough money!"); return; }
+  machines.push(key);
+  save("bakeryMachines", machines);
+  setMoney(money - price);
+  vypisStatus("Machine bought!",1);
+  stavPrachy();
+  renderBakeryMachinesShop();
+  renderBakerySection();
+  if (key === "water_tap") {
+    if (!localStorage.getItem("bakeryWaterNext")) {
+      localStorage.setItem("bakeryWaterNext", ""+(Date.now() + WATER_INTERVAL));
+    }
+    startWaterProgress();
+  }
+}
+
+// DOUGH PROGRESS MIXING
+function startDoughMixing() {
+  let sklad = getSklad();
+  if ((sklad["pšenice"]||0) < 1 || (sklad["water"]||0) < 1) return;
+  if (window.doughInProgress) return;
+  window.doughInProgress = true;
+  window.doughEndTime = Date.now() + DOUGH_INTERVAL;
+  renderBakerySection();
+  window.doughMixInterval = setInterval(function() {
+    let now = Date.now();
+    if (now >= window.doughEndTime) {
+      clearInterval(window.doughMixInterval);
+      window.doughInProgress = false;
+      finishDough();
+    }
+    renderBakerySection();
+  }, 333);
+}
+
+function finishDough() {
+  let sklad = getSklad();
+  if ((sklad["pšenice"]||0) < 1 || (sklad["water"]||0) < 1) return;
+  sklad["pšenice"] -= 1;
+  sklad["water"] -= 1;
+  sklad["testo"] = (sklad["testo"]||0) + 1;
+  setSklad(sklad);
+  vypisStatus("Dough ready!", 1);
+  renderBakerySection();
+}
+
+// BREAD (používá už správně "testo")
+function bakeBread() {
+  let sklad = getSklad();
+  if ((sklad["testo"]||0) < 1) return;
+  sklad["testo"] -= 1;
+  sklad["bread"] = (sklad["bread"]||0) + 1;
+  setSklad(sklad);
+  renderBakerySection();
+}
+
+// --- WATER PROGRESS BAR ---
+function startWaterProgress() {
+  if (!load("bakeryMachines", []).includes("water_tap")) return;
+  if (window.waterIntervalId) clearInterval(window.waterIntervalId);
+  if (!localStorage.getItem("bakeryWaterNext")) {
+    localStorage.setItem("bakeryWaterNext", ""+(Date.now() + WATER_INTERVAL));
+  }
+  window.waterIntervalId = setInterval(()=>{
+    renderBakerySection();
+    checkWaterDone();
+  }, 333);
+}
+
+function checkWaterDone() {
+  let waterNext = parseInt(localStorage.getItem("bakeryWaterNext")||"0",10);
+  if (!waterNext || isNaN(waterNext)) return;
+  let now = Date.now();
+  if (now >= waterNext) {
+    let sklad = getSklad();
+    sklad["water"] = (sklad["water"]||0) + 1;
+    setSklad(sklad);
+    localStorage.setItem("bakeryWaterNext", ""+(now + WATER_INTERVAL));
+    vypisStatus("Water collected!", 1);
+    renderBakerySection();
+  }
+}
+
+function renderBakerySection() {
+  let html = "";
+  const machines = load("bakeryMachines", []);
+  const sklad = getSklad();
+
+  // --- WATER TAP (zůstává) ---
+  if (machines.includes("water_tap")) {
+    let waterNext = parseInt(localStorage.getItem("bakeryWaterNext")||"0",10);
+    let now = Date.now();
+    let left = Math.max(0, waterNext-now);
+    let percent = Math.min(100, 100-(100*left/WATER_INTERVAL));
+    let min = Math.floor(left/60000);
+    let sec = Math.floor((left%60000)/1000);
+    html += "<div class='phase-card'>";
+    html += "<div class='phase-title'><span class='phase-icon'>🚰</span> Water tap</div>";
+    html += "<div class='phase-info'>Produces 1 water every 2 minutes</div>";
+    html += "<div class='progress-container' style='width:90%;margin:8px auto;height:18px;background:#eee;border-radius:8px;box-shadow:0 1px 4px #20827822;overflow:hidden;'><div class='progress-bar' style='height:100%;background:#37af7b;width:" + percent + "%;transition:width 0.2s;'></div></div>";
+    html += "<div class='progress-text'>Time left: " + min + "m " + (sec<10?"0":"") + sec + "s</div>";
+    html += "<div style='margin-top:10px;'><b>Water:</b> " + (sklad["water"]||0) + "</div>";
+    html += "</div>";
+  }
+
+  // --- DOUGH MIXING S PROGRESSEM ---
+  html += "<div class='phase-card'>";
+  html += "<div class='phase-title'><span class='phase-icon'>🥣</span> Dough mixing</div>";
+  html += "<div class='phase-info'><b>Needs:</b> 1× wheat, 1× water</div>";
+
+  if (!machines.includes("water_tap")) {
+    html += "<div class='need'>Buy the Water Tap first!</div>";
+  } else if (window.doughInProgress) {
+    let now = Date.now();
+    let left = Math.max(0, window.doughEndTime-now);
+    let percent = Math.min(100, 100-(100*left/DOUGH_INTERVAL));
+    let sec = Math.floor((left%60000)/1000);
+    html += "<div class='progress-container' style='width:90%;margin:8px auto;height:18px;background:#ffe5b4;border-radius:8px;box-shadow:0 1px 4px #ffba0022;overflow:hidden;'><div class='progress-bar' style='height:100%;background:#e5aa3a;width:" + percent + "%;transition:width 0.2s;'></div></div>";
+    html += "<div class='progress-text'>Mixing dough: " + (sec<10?"0":"")+sec + "s left</div>";
+    html += "<button class='prod-btn' disabled>Mixing...</button>";
+  } else {
+    let hasWheat = (sklad["pšenice"]||0) > 0;
+    let hasWater = (sklad["water"]||0) > 0;
+    if (!hasWheat && !hasWater) {
+      html += "<div class='need'>You need wheat <b>and</b> water!</div>";
+      html += "<button class='prod-btn' disabled>Mix Dough</button>";
+    } else if (!hasWheat) {
+      html += "<div class='need'>You need wheat!</div>";
+      html += "<button class='prod-btn' disabled>Mix Dough</button>";
+    } else if (!hasWater) {
+      html += "<div class='need'>You need water!</div>";
+      html += "<button class='prod-btn' disabled>Mix Dough</button>";
+    } else {
+      html += "<button class='prod-btn' onclick='startDoughMixing()'>Mix Dough</button>";
+    }
+  }
+  html += "<div style='margin-top:10px;'><b>Dough:</b> " + (sklad["testo"]||0) + "</div>";
+  html += "</div>";
+
+  // --- BREAD ---
+  html += "<div class='phase-card'>";
+  html += "<div class='phase-title'><span class='phase-icon'>🍞</span> Baking bread</div>";
+  html += "<div class='phase-info'><b>Needs:</b> 1× dough</div>";
+  if (!machines.includes("oven")) {
+    html += "<div class='need'>Buy the Oven first!</div>";
+  } else if ((sklad["testo"]||0) < 1) {
+    html += "<div class='need'>Not enough dough!</div>";
+    html += "<button class='prod-btn' disabled>Bake Bread</button>";
+  } else {
+    html += "<button class='prod-btn' onclick='bakeBread()'>Bake Bread</button>";
+  }
+  html += "<div style='margin-top:10px;'><b>Bread:</b> " + (sklad["bread"]||0) + "</div>";
+  html += "</div>";
+
+  document.getElementById("pekarSection").innerHTML = html;
+}
+
+window.onload = function() {
+  stavPrachy();
+  renderPiBalance();
+  renderBakeryMachinesShop();
+  renderBakerySection();
+  if (load("bakeryMachines", []).includes("water_tap")) {
+    startWaterProgress();
+  }
+};
+
+  </script>
+</body>
+</html>
