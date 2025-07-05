@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Drunk - Punk</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #fef6fa 0%, #e1fcff 100%); margin: 0; padding: 0; text-align: center;}
+    .nav-bar { position: fixed; top: 0; left: 0; width: 100vw; background: #2196f3; color: white; display: flex; justify-content: flex-end; gap: 2px; z-index: 1000; box-shadow: 0 2px 8px #0002; padding: 7px 0; }
+    .nav-link { color: white; padding: 7px 24px; text-decoration: none; font-weight: bold; font-size: 1.07em; border-radius: 0 0 10px 10px; transition: background 0.18s; display: flex; align-items: center; gap: 6px; }
+    .nav-link.active, .nav-link:hover { background: #1760a3; }
+    body { padding-top: 48px; }
+    .zpet-link { display: inline-block; margin: 20px 0 4px 0; color: #1760a3; background: #e9f6fd; padding: 7px 17px; border-radius: 9px; text-decoration: none; font-weight: bold; font-size: 1.08em; box-shadow: 0 1px 8px #bbe8fd44; transition: background 0.13s, color 0.13s; }
+    .zpet-link:hover { background: #b7e0ed; color: #124061; }
+    h2 { margin: 16px 0 7px 0; color: #208278; font-size: 2.35em;}
+    .section { background: #fff; border-radius: 15px; box-shadow: 0 2px 14px #b7d9db35; display: inline-block; margin: 14px auto 0 auto; padding: 16px 17px 13px 17px; min-width: 220px; max-width: 98vw; text-align: left; }
+    .section-title { color: #217c5e; font-size: 1.13em; margin-bottom: 8px; font-weight: 700; letter-spacing: 1px; }
+    .status { color:#b24b4b; font-weight:600; margin-bottom:10px;}
+    .success { color:#217c5e; }
+    .prod-btn { background: #37af7b; color: #fff; border: none; border-radius: 7px; font-size: 1em; margin: 6px 0 10px 0; padding: 5px 20px; cursor: pointer;}
+    .prod-btn:hover { background: #136652; }
+    .prod-btn[disabled] { background: #9dbdae; cursor: not-allowed;}
+    .machines-list {margin-bottom:14px;}
+    .machines-list span {background:#e9dcb4;border-radius:7px;padding:5px 14px 4px 11px;font-size:1em;margin:0 7px 5px 0;display:inline-block;}
+    .need {color:#b24b4b;}
+    .has {color:#217c5e;}
+    .cards-flex { display: flex; flex-wrap: wrap; justify-content: center; gap: 34px; margin-bottom: 6px; }
+    .nav-link-stats { background: #e26e08 !important; color: #333 !important; border-radius: 11px; margin-left: 6px; font-size: 1.32em; box-shadow: 0 2px 10px #ffd70033; border: 2.5px solid #fff; filter: saturate(1.4) brightness(1.12);}
+    .phase-card { background: #f8fcf7; border-radius: 14px; box-shadow: 0 2px 12px #b7d9db33; padding: 20px 23px 18px 23px; min-width: 230px; max-width: 340px; margin: 6px 6px 0 6px; display: flex; flex-direction: column; align-items: center; border-top: 7px solid #37af7b; transition: box-shadow .18s;}
+    .phase-title { font-size: 1.17em; font-weight: 700; color: #136652; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .phase-icon { font-size: 2em; }
+    .phase-info { font-size: 1em; margin: 4px 0 7px 0;}
+    @media (max-width:900px) { .cards-flex { flex-direction: column; align-items: center; gap: 14px;} .phase-card { min-width: 220px; max-width: 99vw;} }
+    @media (max-width:600px){ body { padding-top: 90px; } .nav-bar { justify-content: center; flex-wrap: wrap; font-size: 0.97em; } .nav-link { padding:7px 8px;font-size:1em; } .section { padding:10px; } h2 { font-size: 2.1em; } .zpet-link { padding: 7px 6vw; font-size:1em;} }
+  </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <a href="pestovani.html" class="nav-link">🌱 Grow Sh*t</a>
+    <a href="vyroba.html" class="nav-link active">⚗️ Brewing</a>
+    <a href="jzd.html" class="nav-link">🐷 Coop</a>
+    <a href="sklad.html" class="nav-link">📦 Stash</a>
+    <a href="hotel.html" class="nav-link">🏨 Motel</a>
+    <a href="pub.html" class="nav-link">🏡 Bar</a>
+    <a href="market.html" class="nav-link">🏪 Bazaar</a>
+    <a href="finance.html" class="nav-link">💰 Wallet</a>
+    <a class="nav-link nav-link-stats" href="statistiky.html">📊</a>
+  </div>
+  <a href="vyroba.html" class="zpet-link">← Back to production</a>
+  <h2>🍔 Fast Food</h2>
+  <div id="balances" style="text-align:center; margin: 10px 0; font-weight: bold; font-size: 1.2em;">
+    <b>💵 Balance: <span id="stavPrachy"></span><br>
+    🪙 PI Coins: <span id="pi-balance"></span></b> ϖ
+  </div>
+  <div id="machinesSection"></div>
+  <div class="cards-flex" id="fastfoodSection"></div>
+  <div class="section" id="vyrobaStatus"></div>
+  <script>
+function getPi() { return JSON.parse(localStorage.getItem("lihobaronPi") || "0"); }
+function renderPiBalance() { document.getElementById("pi-balance").textContent = getPi(); }
+function load(key, def) { try { let d=localStorage.getItem(key); if(!d)return def; return JSON.parse(d);}catch{return def;} }
+function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
+function getMoney() { return load("lihobaronFarmCoins", 0);}
+function setMoney(m) { save("lihobaronFarmCoins", m);}
+function getSklad() { return load("lihobaronFarmStorage", {});}
+function setSklad(s) { save("lihobaronFarmStorage", s);}
+function stavPrachy() { document.getElementById("stavPrachy").innerText = getMoney()+" $"; }
+function vypisStatus(txt,ok){ let e=document.getElementById("vyrobaStatus"); e.innerHTML="<span class='"+(ok?"success":"status")+"'>"+txt+"</span>"; setTimeout(()=>{e.innerHTML='';},2300);}
+
+// --- Machines ---
+const FASTFOOD_MACHINES = [
+  { key: "grill", name: "Grill 🔥", price: 15200 },
+  { key: "electric_frying_pan", name: "Electric Frying Pan 🍳", price: 14100 },
+  { key: "burger_maker", name: "Burger Maker 🍔", price: 19100 }
+];
+
+const BACON_INTERVAL = 1900000;       // 31 min
+const FRIED_EGG_INTERVAL = 1600000;   // 26 min
+const BURGER_INTERVAL = 2100000;      // 35 min
+
+// ==== READY helpers ====
+function isBaconReady() {
+  if (localStorage.getItem("fastfoodBaconReady") === "1") return true;
+  let end = parseInt(localStorage.getItem("fastfoodBaconEndTime")||"0",10);
+  if (end && Date.now() >= end) {
+    localStorage.removeItem("fastfoodBaconEndTime");
+    localStorage.setItem("fastfoodBaconReady", "1");
+    return true;
+  }
+  return false;
+}
+function isFriedEggReady() {
+  if (localStorage.getItem("fastfoodFriedEggReady") === "1") return true;
+  let end = parseInt(localStorage.getItem("fastfoodFriedEggEndTime")||"0",10);
+  if (end && Date.now() >= end) {
+    localStorage.removeItem("fastfoodFriedEggEndTime");
+    localStorage.setItem("fastfoodFriedEggReady", "1");
+    return true;
+  }
+  return false;
+}
+function isBurgerReady() {
+  if (localStorage.getItem("fastfoodBurgerReady") === "1") return true;
+  let end = parseInt(localStorage.getItem("fastfoodBurgerEndTime")||"0",10);
+  if (end && Date.now() >= end) {
+    localStorage.removeItem("fastfoodBurgerEndTime");
+    localStorage.setItem("fastfoodBurgerReady", "1");
+    return true;
+  }
+  return false;
+}
+
+// --- SHOP ---
+function renderFastFoodMachinesShop() {
+  const machines = load("fastfoodMachines", []);
+  let html = "<div class='section-title'>🛒 Machine shop</div>";
+  html += "<div class='machines-list'>";
+  FASTFOOD_MACHINES.forEach(m=>{
+    if (machines.includes(m.key)) {
+      html += "<span class='has'>" + m.name + " ✔️</span>";
+    } else {
+      html += "<span class='need'>" + m.name + " (" + m.price + " $) " +
+        "<button class='prod-btn' onclick=\"buyFastFoodMachine('" + m.key + "'," + m.price + ")\">Buy</button></span>";
+    }
+  });
+  html += "</div>";
+  document.getElementById("machinesSection").innerHTML = html;
+}
+function buyFastFoodMachine(key, price) {
+  let machines = load("fastfoodMachines", []);
+  let allMachines = load("lihobaronMachines", []);
+  let money = getMoney();
+  if (machines.includes(key)) { vypisStatus("You already got this machine!",0); return; }
+  if (money < price) { alert("Not enough money!"); return; }
+  machines.push(key);
+  if (allMachines.indexOf(key) === -1) { allMachines.push(key); }
+  save("fastfoodMachines", machines);
+  save("lihobaronMachines", allMachines);
+  setMoney(money - price);
+  vypisStatus("Machine bought!",1);
+  stavPrachy();
+  renderFastFoodMachinesShop();
+  renderFastFoodSection();
+}
+
+// === BACON ===
+function startBaconMaking() {
+  let sklad = getSklad();
+  if (!sklad["šunka"] || sklad["šunka"] < 1) {
+    vypisStatus("Not enough ham!", 0);
+    return;
+  }
+  if (localStorage.getItem("fastfoodBaconEndTime") || isBaconReady()) return;
+  sklad["šunka"] -= 1;
+  setSklad(sklad);
+  let endTime = Date.now() + BACON_INTERVAL;
+  localStorage.setItem("fastfoodBaconEndTime", endTime);
+  spustBaconInterval();
+  renderFastFoodSection();
+}
+function spustBaconInterval() {
+  if (window.baconInterval) clearInterval(window.baconInterval);
+  let end = parseInt(localStorage.getItem("fastfoodBaconEndTime")||"0",10);
+  if (!end || end <= Date.now()) return;
+  window.baconInterval = setInterval(function() {
+    isBaconReady();
+    renderFastFoodSection();
+    if (isBaconReady()) {
+      clearInterval(window.baconInterval);
+      window.baconInterval = null;
+    }
+  }, 333);
+}
+function collectBacon() {
+  if (!isBaconReady()) return;
+  let sklad = getSklad();
+  sklad["bacon"] = (sklad["bacon"] || 0) + 1;
+  setSklad(sklad);
+  localStorage.removeItem("fastfoodBaconReady");
+  if (window.baconInterval) { clearInterval(window.baconInterval); window.baconInterval = null; }
+  vypisStatus("Collected 1 bacon!", 1);
+  renderFastFoodSection();
+}
+
+// === FRIED EGG ===
+function startFriedEggMaking() {
+  let sklad = getSklad();
+  if (!sklad["vejce"] || sklad["vejce"] < 1) {
+    vypisStatus("Not enough egg!", 0);
+    return;
+  }
+  if (localStorage.getItem("fastfoodFriedEggEndTime") || isFriedEggReady()) return;
+  sklad["vejce"] -= 1;
+  setSklad(sklad);
+  let endTime = Date.now() + FRIED_EGG_INTERVAL;
+  localStorage.setItem("fastfoodFriedEggEndTime", endTime);
+  spustFriedEggInterval();
+  renderFastFoodSection();
+}
+function spustFriedEggInterval() {
+  if (window.friedEggInterval) clearInterval(window.friedEggInterval);
+  let end = parseInt(localStorage.getItem("fastfoodFriedEggEndTime")||"0",10);
+  if (!end || end <= Date.now()) return;
+  window.friedEggInterval = setInterval(function() {
+    isFriedEggReady();
+    renderFastFoodSection();
+    if (isFriedEggReady()) {
+      clearInterval(window.friedEggInterval);
+      window.friedEggInterval = null;
+    }
+  }, 333);
+}
+function collectFriedEgg() {
+  if (!isFriedEggReady()) return;
+  let sklad = getSklad();
+  sklad["fried_egg"] = (sklad["fried_egg"]||0) + 1;
+  setSklad(sklad);
+  localStorage.removeItem("fastfoodFriedEggReady");
+  if (window.friedEggInterval) { clearInterval(window.friedEggInterval); window.friedEggInterval = null; }
+  vypisStatus("Collected 1 fried egg!", 1);
+  renderFastFoodSection();
+}
+
+// === BURGER ===
+function startBurgerMaking() {
+  let sklad = getSklad();
+  if (!sklad["krůtí_maso"] || sklad["krůtí_maso"] < 1) {
+    vypisStatus("Not enough turkey meat!", 0);
+    return;
+  }
+  if (localStorage.getItem("fastfoodBurgerEndTime") || isBurgerReady()) return;
+  sklad["krůtí_maso"] -= 1;
+  setSklad(sklad);
+  let endTime = Date.now() + BURGER_INTERVAL;
+  localStorage.setItem("fastfoodBurgerEndTime", endTime);
+  spustBurgerInterval();
+  renderFastFoodSection();
+}
+function spustBurgerInterval() {
+  if (window.burgerInterval) clearInterval(window.burgerInterval);
+  let end = parseInt(localStorage.getItem("fastfoodBurgerEndTime")||"0",10);
+  if (!end || end <= Date.now()) return;
+  window.burgerInterval = setInterval(function() {
+    isBurgerReady();
+    renderFastFoodSection();
+    if (isBurgerReady()) {
+      clearInterval(window.burgerInterval);
+      window.burgerInterval = null;
+    }
+  }, 333);
+}
+function collectBurger() {
+  if (!isBurgerReady()) return;
+  let sklad = getSklad();
+  sklad["turkey_hamburger"] = (sklad["turkey_hamburger"]||0) + 1;
+  setSklad(sklad);
+  localStorage.removeItem("fastfoodBurgerReady");
+  if (window.burgerInterval) { clearInterval(window.burgerInterval); window.burgerInterval = null; }
+  vypisStatus("Collected 1 turkey hamburger!", 1);
+  renderFastFoodSection();
+}
+
+// === RENDER ===
+function renderFastFoodSection() {
+  let html = "";
+  const machines = load("fastfoodMachines", []);
+  const sklad = getSklad();
+
+  // BACON
+  html += "<div class='phase-card'>";
+  html += "<div class='phase-title'><span class='phase-icon'>🥓</span> Bacon production</div>";
+  html += "<div class='phase-info'><b>Needs:</b> 1× Ham</div>";
+  if (!machines.includes("grill")) {
+    html += "<div class='need'>Buy the Grill first!</div>";
+  } else if (isBaconReady()) {
+    html += "<div class='success'>Bacon is ready!</div>";
+    html += "<button class='prod-btn' onclick='collectBacon()'>Collect bacon</button>";
+  } else if (localStorage.getItem("fastfoodBaconEndTime")) {
+    let end = parseInt(localStorage.getItem("fastfoodBaconEndTime"),10);
+    let left = Math.max(0, end-Date.now());
+    let percent = Math.min(100, 100-(100*left/BACON_INTERVAL));
+    let min = Math.floor(left/60000);
+    let sec = Math.floor((left%60000)/1000);
+    html += "<div class='progress-container' style='width:90%;margin:8px auto;height:18px;background:#ffe5b4;border-radius:8px;box-shadow:0 1px 4px #ffba0022;overflow:hidden;'><div class='progress-bar' style='height:100%;background:#e5aa3a;width:" + percent + "%;transition:width 0.2s;'></div></div>";
+    html += "<div class='progress-text'>Processing bacon: " + min + "m " + (sec<10?"0":"")+sec + "s</div>";
+    html += "<button class='prod-btn' disabled>Processing...</button>";
+  } else {
+    let hasHam = (sklad["šunka"]||0) > 0;
+    if (!hasHam) {
+      html += "<div class='need'>You need ham!</div>";
+      html += "<button class='prod-btn' disabled>Start bacon</button>";
+    } else {
+      html += "<button class='prod-btn' onclick='startBaconMaking()'>Start bacon</button>";
+    }
+  }
+  html += "<div style='margin-top:10px;'><b>Bacon:</b> " + (sklad["bacon"]||0) + "</div>";
+  html += "</div>";
+
+  // FRIED EGG
+  html += "<div class='phase-card'>";
+  html += "<div class='phase-title'><span class='phase-icon'>🍳</span> Fried egg production</div>";
+  html += "<div class='phase-info'><b>Needs:</b> 1× Egg</div>";
+  if (!machines.includes("electric_frying_pan")) {
+    html += "<div class='need'>Buy the Electric Frying Pan first!</div>";
+  } else if (isFriedEggReady()) {
+    html += "<div class='success'>Fried egg is ready!</div>";
+    html += "<button class='prod-btn' onclick='collectFriedEgg()'>Collect fried egg</button>";
+  } else if (localStorage.getItem("fastfoodFriedEggEndTime")) {
+    let end = parseInt(localStorage.getItem("fastfoodFriedEggEndTime"),10);
+    let left = Math.max(0, end-Date.now());
+    let percent = Math.min(100, 100-(100*left/FRIED_EGG_INTERVAL));
+    let min = Math.floor(left/60000);
+    let sec = Math.floor((left%60000)/1000);
+    html += "<div class='progress-container' style='width:90%;margin:8px auto;height:18px;background:#ffd5d5;border-radius:8px;box-shadow:0 1px 4px #ffba0022;overflow:hidden;'><div class='progress-bar' style='height:100%;background:#e58a3a;width:" + percent + "%;transition:width 0.2s;'></div></div>";
+    html += "<div class='progress-text'>Processing fried egg: " + min + "m " + (sec<10?"0":"")+sec + "s</div>";
+    html += "<button class='prod-btn' disabled>Processing...</button>";
+  } else {
+    let hasEgg = (sklad["vejce"]||0) > 0;
+    if (!hasEgg) {
+      html += "<div class='need'>You need egg!</div>";
+      html += "<button class='prod-btn' disabled>Start fried egg</button>";
+    } else {
+      html += "<button class='prod-btn' onclick='startFriedEggMaking()'>Start fried egg</button>";
+    }
+  }
+  html += "<div style='margin-top:10px;'><b>Fried egg:</b> " + (sklad["fried_egg"]||0) + "</div>";
+  html += "</div>";
+
+  // TURKEY HAMBURGER
+  html += "<div class='phase-card'>";
+  html += "<div class='phase-title'><span class='phase-icon'>🍔</span> Turkey Hamburger</div>";
+  html += "<div class='phase-info'><b>Needs:</b> 1× Turkey meat</div>";
+  if (!machines.includes("burger_maker")) {
+    html += "<div class='need'>Buy the Burger Maker first!</div>";
+  } else if (isBurgerReady()) {
+    html += "<div class='success'>Turkey hamburger is ready!</div>";
+    html += "<button class='prod-btn' onclick='collectBurger()'>Collect burger</button>";
+  } else if (localStorage.getItem("fastfoodBurgerEndTime")) {
+    let end = parseInt(localStorage.getItem("fastfoodBurgerEndTime"),10);
+    let left = Math.max(0, end-Date.now());
+    let percent = Math.min(100, 100-(100*left/BURGER_INTERVAL));
+    let min = Math.floor(left/60000);
+    let sec = Math.floor((left%60000)/1000);
+    html += "<div class='progress-container' style='width:90%;margin:8px auto;height:18px;background:#ffd5b4;border-radius:8px;box-shadow:0 1px 4px #ffba0022;overflow:hidden;'><div class='progress-bar' style='height:100%;background:#e55a3a;width:" + percent + "%;transition:width 0.2s;'></div></div>";
+    html += "<div class='progress-text'>Processing burger: " + min + "m " + (sec<10?"0":"")+sec + "s</div>";
+    html += "<button class='prod-btn' disabled>Processing...</button>";
+  } else {
+    let hasMeat = (sklad["krůtí_maso"]||0) > 0;
+    if (!hasMeat) {
+      html += "<div class='need'>You need turkey meat!</div>";
+      html += "<button class='prod-btn' disabled>Start burger</button>";
+    } else {
+      html += "<button class='prod-btn' onclick='startBurgerMaking()'>Start burger</button>";
+    }
+  }
+  html += "<div style='margin-top:10px;'><b>Turkey Hamburger:</b> " + (sklad["turkey_hamburger"]||0) + "</div>";
+  html += "</div>";
+
+  document.getElementById("fastfoodSection").innerHTML = html;
+}
+
+// === ONLOAD ===
+window.onload = function() {
+  window.baconInterval = null;
+  window.friedEggInterval = null;
+  window.burgerInterval = null;
+  let baconEnd = parseInt(localStorage.getItem("fastfoodBaconEndTime")||"0",10);
+  if (baconEnd && baconEnd > Date.now()) spustBaconInterval();
+  let eggEnd = parseInt(localStorage.getItem("fastfoodFriedEggEndTime")||"0",10);
+  if (eggEnd && eggEnd > Date.now()) spustFriedEggInterval();
+  let burgerEnd = parseInt(localStorage.getItem("fastfoodBurgerEndTime")||"0",10);
+  if (burgerEnd && burgerEnd > Date.now()) spustBurgerInterval();
+  stavPrachy();
+  renderPiBalance();
+  renderFastFoodMachinesShop();
+  renderFastFoodSection();
+};
+  </script>
+</body>
+</html>
