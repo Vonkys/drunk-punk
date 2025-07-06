@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Drunk - Punk</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script>
+    if (window.Pi) {
+      Pi.init({ version: "2.0" });
+    } else {
+      console.warn("Pi SDK nebyl načten!");
+    }
+  </script>
+ <!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+ 
+<script>
+ var piUsername = localStorage.getItem("piUser"); // nebo "piUsername" podle toho, jak to máš na indexu
+
+if (!piUsername) {
+  alert("You must be logged in with Pi! Go to the homepage and login first.");
+  // Klidně rovnou přesměruj na homepage
+  window.location.href = "index.html";
+}
+</script>
+
+ <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8f8fa; margin: 0; padding: 0; }
+    .nav-link-stats {
+      background: #e26e08 !important;  /* zlatá, nebo třeba #ff66a3, #a0e370, prostě něco co nikde jinde není */
+      color: #333 !important;
+      border-radius: 11px;
+      margin-left: 6px;
+     font-size: 1.32em;  /* větší emoji, ať to svítí */
+     box-shadow: 0 2px 10px #ffd70033;
+     border: 2.5px solid #fff;
+     filter: saturate(1.4) brightness(1.12); 
+    }
+    h1 { text-align: center; color: #208278; margin-top: 80px; }
+    @media (max-width: 600px) {
+  h1 { margin-top: 30px;} /* nebo klidně 20px, uprav si podle oka */
+  }
+    .nav-bar { position: fixed; top: 0; left: 0; width: 100vw; background: #2196f3; color: white;
+      display: flex; justify-content: flex-end; gap: 2px; z-index: 1000; box-shadow: 0 2px 8px #0002; padding: 7px 0; }
+    .nav-link { color: white; padding: 7px 24px; text-decoration: none; font-weight: bold; font-size: 1.07em;
+      border-radius: 0 0 10px 10px; transition: background 0.18s; display: flex; align-items: center; gap: 6px; }
+    .nav-link.active, .nav-link:hover { background: #1760a3; }
+    .container { max-width: 430px; margin: 18px auto 0 auto; background: #fff; border-radius: 14px;
+      box-shadow: 0 2px 16px #b7d9db35; padding: 23px 18px 18px 18px;}
+    .item-row { display: flex; align-items: center; border-bottom: 1px solid #eee;
+      padding: 8px 0; font-size: 1.08em;}
+    .item-row:last-child { border-bottom: none; }
+    .item-emoji { font-size: 1.17em; margin-right:7px;}
+    .item-label { flex: 1; }
+    .item-val { min-width: 36px; text-align: right; font-variant-numeric: tabular-nums; margin-left: 12px;}
+    .sell-btn { margin-left: 10px; background: #2196f3; color: white; border: none;
+      border-radius: 5px; padding: 4px 10px; font-weight: bold; cursor: pointer;}
+    .sell-btn:hover { background: #1760a3;}
+    .msg { text-align: center; margin: 10px auto 0 auto; font-size: 1.1em; color: #1760a3; }
+    @media (max-width:600px){
+      .container{padding:10px;}
+      .nav-link{padding:7px 8px;font-size:1em;}
+      .nav-bar{flex-wrap:wrap; justify-content:center;}
+      body { padding-top: 90px; }
+    }
+    #confirm-modal { display:none; position:fixed; z-index:9999; top:0; left:0; width:100vw; height:100vh; background:#0007; }
+    .confirm-content {
+      background:#fff; border-radius:14px; box-shadow:0 4px 32px #0005; max-width:340px;
+      margin:14vh auto 0 auto; padding:30px 18px 20px 18px; text-align:center; position:relative;
+      animation: pop-in .15s cubic-bezier(.27,1.42,.7,1.04);
+    }
+    #confirm-modal button { margin: 0 12px; }
+    @keyframes pop-in {
+      0% { transform: scale(0.92); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  .back-disketa {
+  position: fixed;
+  top: 65px; /* nebo 60px podle přesné výšky navigace! */
+  left: 10px;
+  font-size: 2em;
+  background: #22c55e;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  cursor: pointer;
+  padding: 0.08em 0.42em 0.13em 0.42em;
+  z-index: 2002;
+  transition: background 0.18s;
+  line-height: 1.1em;
+}
+
+.back-disketa:hover {
+  background: #16a34a;
+}
+@media (max-width:600px) {
+  .back-disketa {
+    top: 95px; /* pokud má navigace na mobilu větší výšku */
+    left: 10px;
+    font-size: 1.6em;
+    padding: 0.02em 0.33em 0.13em 0.33em;
+  }
+}
+  </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <a href="pestovani.html" class="nav-link">🌱 Grow Sh*t</a>
+    <a href="vyroba.html" class="nav-link">⚗️ Brewing</a>
+    <a href="jzd.html" class="nav-link">🐷 Coop</a>
+    <a href="sklad.html" class="nav-link">📦 Stash</a>
+    <a href="hotel.html" class="nav-link">🏨 Motel</a>
+    <a href="pub.html" class="nav-link">🏡 Bar</a>
+    <a href="market.html" class="nav-link">🏪 Bazaar</a>
+    <a href="finance.html" class="nav-link active">💰 Wallet</a>
+    <a class="nav-link nav-link-stats" href="statistiky.html">📊</a>
+  </div>
+  <button class="back-disketa" onclick="saveLocalStorageToCloud()" title="Save game to cloud">
+  💾
+</button>
+  <h1>💰 Wallet</h1>
+  <div id="balances" style="text-align:center; margin: 10px 0; font-weight: bold; font-size: 1.2em;">
+    <b>💵 Balance: <span id="money"></span> $<br>
+    🪙 PI Coins: <span id="pi-balance"></span></b> ϖ
+    <div id="msg" class="msg"></div>
+    <div style="text-align:center; margin-top: 12px;">
+      <button id="btn-dobit-pi" style="background:#2196f3; color:white; padding:6px 16px; border-radius:7px; font-weight:bold; cursor:pointer;">
+        Top up ϖ
+      </button>
+      <button id="btn-daily-login" style="background:#4caf50; color:white; padding:6px 16px; border-radius:7px; font-weight:bold; cursor:pointer; margin-left: 8px;">
+        Daily Login
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal okno confirm -->
+  <div id="confirm-modal">
+    <div class="confirm-content">
+      <div id="confirm-text" style="font-size:1.13em; color:#1760a3; margin-bottom:21px;"></div>
+      <button id="confirm-ok" style="background:#2196f3; color:#fff; border:none; border-radius:8px; padding:7px 22px; margin:0 10px; font-weight:bold; font-size:1.04em; cursor:pointer;">OK</button>
+      <button id="confirm-cancel" style="background:#eee; color:#333; border:none; border-radius:8px; padding:7px 22px; margin:0 10px; font-weight:bold; font-size:1.04em; cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Daily login modal -->
+  <div id="daily-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:20px; border-radius:10px; box-shadow:0 0 10px #0005; z-index:2000; text-align:center;">
+    <h3>Daily Login</h3>
+    <div style="font-size:0.95em; color:#444; margin-bottom: 8px;">
+      Log in for 30 days and earn <b style="color:#4caf50;">100 ϖ</b> 🎁
+    </div>
+    <div id="login-timer" style="color:#1760a3; font-weight:bold; font-size: 1em; margin-bottom: 12px;"></div>
+    <div id="login-days" style="display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; margin:10px 0;"></div>
+    <button onclick="closeDailyModal()" style="margin-top:10px; padding:5px 12px;">Close</button>
+  </div>
+
+  <div class="container">
+    <div id="sell-list"></div>
+  
+  </div>
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyCfPJJL8cbfxmpWpHG5_icQOZjzGWSpeZI",
+    authDomain: "drunk-punk.firebaseapp.com",
+    projectId: "drunk-punk",
+    storageBucket: "drunk-punk.appspot.com", // POZOR! Má být .app**spot**.com
+    messagingSenderId: "749798531604",
+    appId: "1:749798531604:web:9e702aee7c9a2599627d01",
+    measurementId: "G-JSFRP622EL"
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const firestore = firebase.firestore();
+
+// Automaticky přihlásí anonymně, pokud nejsi přihlášen
+firebase.auth().onAuthStateChanged(function(user) {
+    if (!user) {
+        firebase.auth().signInAnonymously();
+    }
+});
+</script>
+
+<script>
+const items = [
+  { key: "pšenice", label: "Wheat", emoji: "🌾" },
+  { key: "chmel", label: "Hops", emoji: "🍃" },
+  { key: "kukuřice", label: "Corn", emoji: "🌽" },
+  { key: "reva", label: "Grapes", emoji: "🍇" },
+  { key: "broskve", label: "Peaches", emoji: "🍊" },
+  { key: "meruňky", label: "Apricots", emoji: "🍑" },
+  { key: "jablko", label: "Apple", emoji: "🍎" },
+  { key: "hrušky",  label: "Pears", emoji: "🍐" },
+  { key: "švestky", label: "Plums", emoji: "🟣" },
+  { key: "mrkev", label: "Carrot", emoji: "🥕" },
+  { key: "brambora", label: "Potatoes", emoji: "🥔" },
+  { key: "rajčata", label: "Tomatoes", emoji: "🍅" },
+  { key: "chilli", label: "Chilli", emoji: "🌶" },
+  { key: "okurky", label: "Cucumbers", emoji: "🥒" },
+  { key: "cibule", label: "Onion", emoji: "🧅" },
+  { key: "česnek", label: "Garlic", emoji: "🧄" },
+  { key: "jahody", label: "Strawberries", emoji: "🍓" },
+  { key: "třešně", label: "Cherries", emoji: "🍒" },
+  { key: "kvas_pivo", label: "Beer wort", emoji: "🍺🧪" },
+  { key: "kvas_vino", label: "Wine wort", emoji: "🧃" },
+  { key: "most_cider", label: "Juice", emoji: "🍎🧪" }, 
+  { key: "popkorn", label: "Popcorn", emoji: "🍿" },
+  { key: "hranolky", label: "Fries", emoji: "🍟" },
+  { key: "kvas_švestky", label: "Plum wort", emoji: "🟣🧪" },
+  { key: "kvas_hrušky",  label: "Pear wort", emoji: "🍐🧪" },
+  { key: "kvas_jablka", label: "Apple wort", emoji: "🍏🧪" },
+  { key: "kvas_meruňky", label: "Apricot wort", emoji: "🍑🧪" },
+  { key: "kvas_broskve", label: "Peach wort", emoji: "🍊🧪" },
+  { key: "kvas_kukuřice", label: "Corn wort", emoji: "🌽" },
+  { key: "kvas_psenice",  label: "Wheat wort", emoji: "🌾" },
+  { key: "kvas_brambora", label: "Potatoes wort", emoji: "🥔" },
+  { key: "pivo",        label: "Beer", emoji: "🍻" },
+  { key: "vino",        label: "Wine", emoji: "🍷" },
+  { key: "cider",       label: "Cider", emoji: "🍶" }, 
+  { key: "mléko", label: "Milk", emoji: "🥛" },
+  { key: "testo",label: "Dough",emoji: "🥣" },
+  { key: "bread", label: "Bread", emoji: "🍞" },
+  { key: "curd", label: "Curd", emoji: "🍥" },
+  { key: "turkey_hamburger", label: "Turkey hamburger", emoji: "🍔" },
+  { key: "goat_cheese", label: "Goat cheese", emoji: "🧀" },
+  { key: "kozí_mléko", label: "Goat milk", emoji: "🥛" },
+  { key: "vejce", label: "Egg", emoji: "🥚" },
+  { key: "fried_egg", label: "Fried egg", emoji: "🍳" },
+  { key: "bacon", label: "Bacon", emoji: "🥓" },
+  { key: "šunka", label: "Ham", emoji: "🍖" },
+  { key: "krůtí_maso", label: "Turkey meat", emoji: "🍗" },
+  { key: "med", label: "Honey", emoji: "🍯" },
+  { key: "vlna", label: "Wool", emoji: "🧶" },
+  { key: "králičí_maso", label: "Rabbit meat", emoji: "🥩" },
+  { key: "kachní_vejce", label: "Duck egg", emoji: "🥚" },
+  { key: "palenka_švestky", label: "Slivovitz", emoji: "🟣🥃" },
+  { key: "palenka_hrušky",  label: "Pear brandy", emoji: "🍐🥃" },
+  { key: "palenka_jablka", label: "Calvados", emoji: "🍏🥃" },
+  { key: "palenka_meruňky", label: "Apricot brandy", emoji: "🍑🥃" },
+  { key: "palenka_broskve", label: "Peach brandy", emoji: "🍊🥃" },
+  { key: "whiskey_kukurice", label: "Whiskey", emoji: "🥃" },
+  { key: "vodka_psenice",    label: "Vodka", emoji: "🍸" },
+  { key: "rum_brambora",     label: "Rum", emoji: "🏴‍☠️" },
+  { key: "marmelada_broskve", label: "Peach jam", emoji: "🍊🍯" },
+  { key: "marmelada_meruňky", label: "Apricot jam", emoji: "🍑🍯" },
+  { key: "marmelada_jahody",  label: "Strawberry jam", emoji: "🍓🍯" },
+  { key: "marmelada_třešně",  label: "Cherry jam", emoji: "🍒🍯" },
+  { key: "marmelada_švestky", label: "Plum jam", emoji: "🟣🍯" },
+  { key: "marmelada_hrušky",  label: "Pear jam", emoji: "🍐🍯" },
+  { key: "marmelada_jablko",  label: "Apple jam", emoji: "🍏🍯" },
+];
+
+const defaultPrices = {
+  pšenice: 4, chmel: 9, kukuřice: 12, reva: 12, broskve: 20, meruňky: 18, jablko: 13, hrušky: 13, švestky: 13, mrkev: 9, brambora: 11,  rajčata: 12, chilli: 15, okurky: 13,
+  cibule: 14, česnek: 16, jahody: 25, třešně: 15,
+  kvas_pivo: 18, kvas_vino: 45, most_cider: 50,
+  kvas_švestky: 17, kvas_hrušky: 15, kvas_meruňky: 18, kvas_broskve: 19, kvas_jablka: 15, kvas_psenice: 12, kvas_kukuřice: 14, kvas_brambora: 15,
+  pivo: 32, vino: 60, cider: 70, popkorn: 50, hranolky: 60, testo: 10, bread: 30, curd: 45, goat_cheese: 50, fried_egg: 35, bacon: 70, turkey_hamburger: 60,
+  mléko: 30, kozí_mléko: 45, vejce: 15, šunka: 45, krůtí_maso: 30, med: 45, vlna: 60, kachní_vejce: 30, králičí_maso: 45,
+  palenka_švestky: 46, palenka_hrušky: 44, palenka_meruňky: 48, palenka_broskve: 50, palenka_jablka: 44, vodka_psenice: 35, whiskey_kukurice: 40, rum_brambora: 42, 
+  marmelada_broskve: 70, marmelada_meruňky: 65, marmelada_jahody: 70, marmelada_třešně: 68, marmelada_švestky: 67, marmelada_hrušky: 64, marmelada_jablko: 63,
+};
+const prices = {...defaultPrices};
+
+const animalDefs = {
+  slepice: { nazev: "Hen", emoji: "🐔", cena: 50 },
+  kachna:  { nazev: "Duck", emoji: "🦆", cena: 75 },
+  krocan:  { nazev: "Turkey", emoji: "🦃", cena: 100 },
+  králík:  { nazev: "Rabbit", emoji: "🐇", cena: 150 },
+  ovce:    { nazev: "Sheep",   emoji: "🐑", cena: 250 },
+  prase:   { nazev: "Pig", emoji: "🐷", cena: 300 },
+  koza:    { nazev: "Goat", emoji: "🐐", cena: 350 },
+  krava:   { nazev: "Cow", emoji: "🐮", cena: 500 },
+  vcela:   { nazev: "Bee", emoji: "🐝", cena: 350 }
+}; 
+
+if (!localStorage.getItem("lihobaronFarmXP")) localStorage.setItem("lihobaronFarmXP", 0);
+if (!localStorage.getItem("lihobaronFarmCoins")) localStorage.setItem("lihobaronFarmCoins", 200);
+if (!localStorage.getItem("lihobaronPi")) localStorage.setItem("lihobaronPi", 200);
+
+function getMoney() {
+  let val = localStorage.getItem("lihobaronFarmCoins");
+  return val === null ? 0 : parseInt(val) || 0;
+}
+function setMoney(v) {
+  document.getElementById("money").textContent = v;
+  localStorage.setItem("lihobaronFarmCoins", v);
+}
+function getPi() {
+  let val = localStorage.getItem("lihobaronPi");
+  if (!val) return 0;
+  try { return JSON.parse(val); }
+  catch (e) { return parseInt(val) || 0; }
+}
+function setPi(v) {
+  document.getElementById("pi-balance").textContent = v;
+  localStorage.setItem("lihobaronPi", JSON.stringify(v));
+}
+
+function renderSellList() {
+  setMoney(getMoney());
+  setPi(getPi());
+  let sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
+  let html = "";
+  items.forEach(function(item, idx) {
+    let val = sklad[item.key] || 0;
+    if (val > 0) {
+      html += "<div class='item-row' style='align-items: flex-start;'>" +
+        "<span class='item-emoji' style='margin-top:7px;'>" + item.emoji + "</span>" +
+        "<span class='item-label' style='min-width:90px;'>" + item.label + "</span>" +
+        "<div style='margin-left:auto;text-align:right;'>" +
+        "<div style='font-size:0.97em;color:#888;'>Amount: <b>" + val + "</b></div>" +
+        "<div style='font-size:0.97em;color:#888;'>Price: " + prices[item.key] + " $</div>" +
+        "<button class='sell-btn' style='margin-top:6px;' onclick='sell(" + idx + ")'>Sell 1</button>" +
+        "<button class='sell-btn' style='margin-top:3px;' onclick='sellAll(" + idx + ")'>Sell all</button>" +
+        "</div></div>";
+    }
+  });
+  if (!html) html = "<div style='text-align:center;color:#aaa;margin-top:17px;'>You have nothing to sell!<br>Plant, grow, brew or distill some slivovitz!</div>";
+  document.getElementById("sell-list").innerHTML = html;
+  renderZvirataList();
+}
+
+// --- MODAL CONFIRM: ---
+function showConfirm(text, cb) {
+  var modal = document.getElementById("confirm-modal");
+  document.getElementById("confirm-text").textContent = text;
+  modal.style.display = "block";
+  function cleanup(ok) {
+    modal.style.display = "none";
+    document.getElementById("confirm-ok").onclick = null;
+    document.getElementById("confirm-cancel").onclick = null;
+    cb(ok);
+  }
+  document.getElementById("confirm-ok").onclick = function() { cleanup(true); };
+  document.getElementById("confirm-cancel").onclick = function() { cleanup(false); };
+}
+
+const LOGIN_KEY = "lihoDailyLogin";
+const MAX_DAYS = 30;
+
+function initDailyLogin() {
+  const raw = localStorage.getItem(LOGIN_KEY);
+  let data = raw ? JSON.parse(raw) : { days: [], last: null };
+
+  const now = new Date();
+  const todayStr = now.toDateString();
+  const container = document.getElementById("login-days");
+  container.innerHTML = "";
+
+  for (let i = 0; i < MAX_DAYS; i++) {
+    const div = document.createElement("div");
+    div.textContent = i + 1;
+    div.style.padding = "10px";
+    div.style.borderRadius = "50%";
+    div.style.textAlign = "center";
+    div.style.background = data.days.includes(i) ? "#4caf50" : "#ccc";
+    div.style.color = "white";
+    container.appendChild(div);
+  }
+
+  const btn = document.getElementById("btn-daily-login");
+  const timerDiv = document.getElementById("login-timer");
+  const last = data.last ? new Date(data.last) : null;
+  const isNewDay = !last || last.toDateString() !== todayStr;
+
+  if (data.days.length === MAX_DAYS) {
+    alert("✅ Reward unlocked! +100 ϖ");
+    setPi(getPi() + 100);
+    data = { days: [], last: now.getTime() };
+    localStorage.setItem(LOGIN_KEY, JSON.stringify(data));
+    return initDailyLogin(); // restart po odměně
+  }
+
+  if (isNewDay) {
+    btn.textContent = "Daily Login";
+    timerDiv.textContent = "";
+  } else {
+    btn.textContent = "Already claimed";
+    const midnight = new Date();
+    midnight.setHours(24, 0, 1, 0);
+    function updateCountdown() {
+      const sec = Math.floor((midnight - new Date()) / 1000);
+      if (sec <= 0) {
+        timerDiv.textContent = "You can now claim again!";
+        initDailyLogin();
+        return;
+      }
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      timerDiv.textContent = "⏳ Next login in " + h + "h " + m + "m " + s + "s";
+      setTimeout(updateCountdown, 1000);
+    }
+    updateCountdown();
+  }
+}
+
+document.getElementById("btn-daily-login").addEventListener("click", function () {
+  const raw = localStorage.getItem(LOGIN_KEY);
+  let data = raw ? JSON.parse(raw) : { days: [], last: null };
+
+  const now = new Date();
+  const last = data.last ? new Date(data.last) : null;
+  const isNewDay = !last || last.toDateString() !== now.toDateString();
+
+  if (isNewDay) {
+    data.days.push(data.days.length);
+    data.last = now.getTime();
+    localStorage.setItem(LOGIN_KEY, JSON.stringify(data));
+  }
+
+  document.getElementById("daily-modal").style.display = "block";
+  initDailyLogin();
+});
+
+function closeDailyModal() {
+  document.getElementById("daily-modal").style.display = "none";
+}
+
+function pocetZvirat(typ) {
+  let animals = JSON.parse(localStorage.getItem("lihobaronZvirata") || "[]");
+  return animals.filter(function(z) { return z.typ === typ && !z.mrtve; }).length;
+}
+function prodatZvire(typ) {
+  let animals = JSON.parse(localStorage.getItem("lihobaronZvirata") || "[]");
+  let idx = animals.findIndex(function(z) { return z.typ === typ && !z.mrtve; });
+  if (idx > -1) {
+    showConfirm("Are you sure you want to sell 1× " + animalDefs[typ].nazev + " for " + animalDefs[typ].cena + " $?", function(ok) {
+      if (!ok) return;
+      animals.splice(idx, 1);
+      localStorage.setItem("lihobaronZvirata", JSON.stringify(animals));
+      let coins = getMoney() + animalDefs[typ].cena;
+      setMoney(coins);
+      showMsg("Sold 1× " + animalDefs[typ].nazev + " za " + animalDefs[typ].cena + " $");
+      renderSellList();
+    });
+  } else {
+    showMsg("No animal to sell!");
+  }
+}
+
+function renderZvirataList() {
+  let html = "";
+  Object.keys(animalDefs).forEach(function(key) {
+    let pocet = pocetZvirat(key);
+    if (pocet > 0) {
+      html += "<div class='item-row'>" +
+        "<span class='item-emoji'>" + animalDefs[key].emoji + "</span>" +
+        "<span class='item-label'>" + animalDefs[key].nazev + "</span>" +
+        "<div style='margin-left:auto;text-align:right;'>" +
+        "<div style='font-size:0.98em; color:#888;'>Count: <b>" + pocet + "</b></div>" +
+        "<div style='font-size:0.98em; color:#888;'>Price: " + animalDefs[key].cena + " $</div>" +
+        "<button class='sell-btn' onclick=\"prodatZvire('" + key + "')\">Sell 1</button>" +
+        "</div></div>";
+    }
+  });
+  if (!html) html = "<div style='text-align:center;color:#aaa;margin-top:17px;'>No animals to sell!</div>";
+  document.getElementById("sell-list").insertAdjacentHTML('beforeend', "<div style='margin-top:24px;'><b>🐮 Animal sales</b></div>" + html);
+}
+
+function showMsg(msg) {
+  document.getElementById("msg").textContent = msg;
+  setTimeout(function () {
+    document.getElementById("msg").textContent = "";
+  }, 1800);
+}
+
+function sell(idx) {
+  let sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
+  let item = items[idx];
+  if ((sklad[item.key]||0) < 1) { showMsg("Nothing to sell!"); return; }
+  showConfirm("Are you sure you want to sell 1× " + item.label + " for " + prices[item.key] + " $?", function(ok) {
+    if (!ok) return;
+    sklad[item.key]--;
+    localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
+    let coins = getMoney() + prices[item.key];
+    setMoney(coins);
+    showMsg("Sold 1× " + item.label + " for " + prices[item.key] + " $");
+    renderSellList();
+  });
+}
+function sellAll(idx) {
+  let sklad = JSON.parse(localStorage.getItem("lihobaronFarmStorage") || "{}");
+  let item = items[idx];
+  let count = sklad[item.key]||0;
+  if (count < 1) { showMsg("Nothing to sell!"); return; }
+  showConfirm("Are you sure you want to SELL ALL (" + count + "× " + item.label + ") for " + (prices[item.key]*count) + " $? This cannot be undone.", function(ok) {
+    if (!ok) return;
+    sklad[item.key]=0;
+    localStorage.setItem("lihobaronFarmStorage", JSON.stringify(sklad));
+    let coins = getMoney() + prices[item.key]*count;
+    setMoney(coins);
+    showMsg("Sell " + count + "× " + item.label + " for " + (prices[item.key]*count) + " $");
+    renderSellList();
+  });
+}
+
+let platbaBezi = false;
+
+document.getElementById("btn-dobit-pi").onclick = async function () {
+  if (!window.Pi) {
+    alert("Pi SDK není dostupné! Otevři stránku v Pi Browseru.");
+    return;
+  }
+  if (platbaBezi) {
+    alert("Už probíhá platba!");
+    return;
+  }
+  platbaBezi = true;
+
+  var backendUrl = "https://backend-production-9cdf.up.railway.app";
+  try {
+    const scopes = ["payments", "username"];
+    const auth = await Pi.authenticate(scopes, function (payment) {
+      alert("Neúplná platba: " + JSON.stringify(payment));
+    });
+    if (!auth || !auth.accessToken || !auth.user) {
+      alert("Chyba při autentizaci!");
+      platbaBezi = false;
+      return;
+    }
+    const paymentData = {
+      amount: 5,
+      memo: "Top up 600 tokens",
+      metadata: { type: "topup", amount: 600 }
+    };
+    Pi.createPayment(paymentData, {
+      onReadyForServerApproval: function (paymentId) {
+        fetch(backendUrl + "/approve", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentId: paymentId })
+        }).catch(function(err){
+          alert("Backend /approve ERR: " + err);
+        });
+      },
+      onReadyForServerCompletion: function (paymentId, txid) {
+        fetch(backendUrl + "/complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paymentId: paymentId, txid: txid })
+        })
+        .then(function(res){ return res.json(); })
+        .then(function(data){
+          if (data.success) {
+            setPi(getPi() + 600);
+            alert("✅ 600 PI added!");
+          } else {
+            alert("❌ Backend rejected payment: " + (data.message || "unknown error"));
+          }
+          platbaBezi = false;
+        })
+        .catch(function(err){
+          alert("Backend /complete ERR: " + err);
+          platbaBezi = false;
+        });
+      },
+      onCancel: function () {
+        alert("Platba zrušena uživatelem!");
+        platbaBezi = false;
+      },
+      onError: function (err) {
+        alert("Chyba v platbě: " + (err && err.message ? err.message : err));
+        platbaBezi = false;
+      }
+    });
+  } catch (e) {
+    alert("Chyba ve flow: " + (e && e.message ? e.message : e));
+    platbaBezi = false;
+  }
+};
+
+
+renderSellList();
+initDailyLogin();
+function saveLocalStorageToCloud() {
+    var piUser = localStorage.getItem("piUser");
+    if (!piUser) {
+        if (!window.Pi) {
+            showMsg("Pi SDK is not loaded!");
+            return;
+        }
+        Pi.authenticate(["username"], function(){})
+        .then(function(auth) {
+            if (auth && auth.user && auth.user.username) {
+                localStorage.setItem("piUser", auth.user.username);
+                saveLocalStorageToCloud();
+            } else {
+                showMsg("Failed to sign in.");
+            }
+        })
+        .catch(function(err) {
+            showMsg("Login error: " + err.message);
+        });
+        return;
+    }
+
+    // Sestav data z localStorage
+    var data = {};
+    for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        // Parse only if you know it's JSON, else leave as is
+        try {
+            if (key === "lihobaronFarmXP") {
+                data[key] = parseInt(localStorage.getItem(key), 10) || 0;
+            } else if (key === "xpHistory") {
+                data[key] = JSON.parse(localStorage.getItem(key) || "[]");
+            } else {
+                data[key] = localStorage.getItem(key);
+            }
+        } catch (e) {
+            data[key] = localStorage.getItem(key);
+        }
+    }
+
+    // --- XP LOGIKA: vždy ukládej historii správně ---
+    var xp = data.lihobaronFarmXP || 0;
+    var xpHistory = Array.isArray(data.xpHistory) ? data.xpHistory : [];
+    var posledni = xpHistory.length ? xpHistory[xpHistory.length-1] : null;
+    if (!posledni || posledni.xp !== xp) {
+        xpHistory.push({
+            xp: xp,
+            timestamp: Date.now()
+        });
+        localStorage.setItem("xpHistory", JSON.stringify(xpHistory));
+    }
+    data.xpHistory = xpHistory;
+
+    // Ulož do Firestore (pi_saves)
+    firestore.collection("pi_saves").doc(piUser).set({
+        data: data,
+        savedAt: new Date().toISOString()
+    }).then(function () {
+        showMsg("✅ Game saved!");
+    }).catch(function (error) {
+        showMsg("Saving error: " + error.message);
+    });
+}
+
+
+</script>
+</body>
+</html>
