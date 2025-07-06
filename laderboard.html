@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Leaderboard</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(120deg,#e3f2fd 0%,#f7faff 100%);
+      color: #242a38;
+      margin: 0;
+      padding: 0;
+    }
+    .back-bar {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 16px;
+      margin-bottom: -12px;
+    }
+    .back-btn {
+      background: #209264;
+      color: #fff;
+      font-size: 1.18em;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 26px 10px 18px;
+      box-shadow: 0 2px 8px #8cefc775;
+      cursor: pointer;
+      transition: background 0.17s, box-shadow 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      outline: none;
+      margin: 0 auto;
+    }
+    .back-btn:hover {
+      background: #14613b;
+      box-shadow: 0 4px 14px #a2e7be55;
+    }
+    h1 {
+      text-align: center;
+      color: #1b365d;
+      font-size: 2.65em;
+      letter-spacing: 1px;
+      margin: 24px 0 20px 0;
+      text-shadow: 0 2.5px 12px #90caf9cc,0 1px 0 #fff;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 17px;
+    }
+    h1 .cup { font-size: 1.2em; filter: drop-shadow(0 2px 8px #ffd700b8);}
+    #leaderboardSection { display: flex; justify-content: center; margin-top: 22px;}
+    table {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 7px 32px #0002, 0 1.5px 6px #4ab8e744;
+      min-width: 410px;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 14px 24px;
+      border: none;
+      font-size: 1.13em;
+      text-align: center;
+      transition: background 0.15s;
+    }
+    th {
+      background: #e3f2fd;
+      color: #1b365d;
+      font-size: 1.11em;
+      letter-spacing: .5px;
+      font-weight: 700;
+      border-bottom: 2.5px solid #90caf9;
+      text-shadow: 0 1px 0 #fff8;
+    }
+    .rank { text-align:center; font-weight: 700;}
+    .email { text-align: left; font-family: inherit; font-size:1.04em; color: #273057;}
+    .xp { font-family: 'Consolas', monospace; font-size:1.11em;}
+    .medal1 {
+      background: linear-gradient(90deg,#ffe37d 82%,#fff6dc 100%) !important;
+      font-size:1.19em;
+      font-weight:800;
+      color:#b9970a;
+      box-shadow:0 1.5px 8px #ffe37d33;
+      border-bottom: 2px solid #ffe08344;
+    }
+    .medal2 {
+      background:linear-gradient(90deg,#cbe3fa 85%,#fcfcff 100%) !important;
+      font-size:1.13em;
+      font-weight:700;
+      color:#577bb6;
+      box-shadow:0 1.5px 8px #b4dafc36;
+      border-bottom: 2px solid #cbe3fa44;
+    }
+    .medal3 {
+      background:linear-gradient(90deg,#ffdbad 82%,#fff9e6 100%) !important;
+      font-size:1.11em;
+      font-weight:700;
+      color:#b47215;
+      box-shadow:0 1.5px 8px #ffc7803c;
+      border-bottom: 2px solid #ffdbad44;
+    }
+    .medalIcon { font-size:1.23em; vertical-align:middle; margin-right:8px; }
+    tr:not(.medal1):not(.medal2):not(.medal3) td {
+      background: #f7fafd;
+      color: #223;
+      border-bottom: 1.5px solid #e3f2fd;
+    }
+    tr:not(.medal1):not(.medal2):not(.medal3):nth-child(even) td {
+      background: #eaf3fa;
+    }
+    tr:not(.medal1):not(.medal2):not(.medal3):hover td {
+      background: #d6ebff !important;
+      color: #155fa0;
+      cursor: pointer;
+    }
+    tr:first-child th { border-top-left-radius:18px; border-top-right-radius:18px;}
+    tr:last-child td { border-bottom-left-radius:18px; border-bottom-right-radius:18px;}
+    @media (max-width:600px){
+      table { min-width:95vw; font-size:0.97em;}
+      th, td { padding:9px 8px;}
+      .back-bar {margin-top: 10px;}
+    }
+  </style>
+</head>
+<body>
+  <h1><span class="cup">🏆</span>Leaderboard<span class="cup">🏆</span></h1>
+  <div class="back-bar">
+  <button class="back-btn" onclick="window.location.href='statistiky.html'">⬅️ Back to Stats</button>
+  <button class="back-btn" style="margin-left:12px;" onclick="window.location.href='mesic.html'">📆 XP za měsíc</button>
+</div>
+
+  <div id="leaderboardSection">Loading...</div>
+  <script>
+    // Mapa UID na email (přepiď podle potřeby)
+    const UID_TO_EMAIL = {
+      "Bh4kdDq1CzZHeMycrWD7X52XH353": "werewolf.lonewolf@seznam.cz",
+      "1khqx3bbMSb2nPCLfIDDIH0KMSA2": "kratochvilk@seznam.cz",
+      "6fxgNC188UVYgYeHNhGMN56GaBy1": "dr.coolman@seznam.cz",
+      "ZdsvNyj9uPSBweIw3eSnEiL5qBO2": "nejakyjiny@seznam.cz",
+      "hlgqCUwrJPN8C4JQIMCtI4CdbPF3": "dalsi@seznam.cz"
+    };
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfPJJL8cbfxmpWpHG5_icQOZjzGWSpeZI",
+      authDomain: "drunk-punk.firebaseapp.com",
+      projectId: "drunk-punk",
+      storageBucket: "drunk-punk.firebasestorage.app",
+      messagingSenderId: "749798531604",
+      appId: "1:749798531604:web:9e702aee7c9a2599627d01",
+      measurementId: "G-JSFRP622EL"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    db.collection("pi_saves").get()
+      .then(snapshot => {
+        let results = [];
+        snapshot.forEach(doc => {
+          let uid = doc.id;
+          let data = doc.data().data || {};
+          let xp = parseInt(data.lihobaronFarmXP || "0", 10);
+          results.push({ uid, xp });
+        });
+        results.sort((a, b) => b.xp - a.xp);
+
+        let html = "<table><tr><th class='rank'>#</th><th>Email</th><th>XP</th></tr>";
+        results.forEach((row, i) => {
+          let show = UID_TO_EMAIL[row.uid] || row.uid;
+          let trClass = "";
+          let medal = "";
+          if(i==0) { trClass = "medal1"; medal="🥇"; }
+          else if(i==1) { trClass = "medal2"; medal="🥈"; }
+          else if(i==2) { trClass = "medal3"; medal="🥉"; }
+          html += "<tr class='"+trClass+"'><td class='rank'>"+(medal?"<span class='medalIcon'>"+medal+"</span>":"")+(i+1)+"</td><td class='email'>"+show+"</td><td class='xp'>"+row.xp+"</td></tr>";
+        });
+        html += "</table>";
+        document.getElementById("leaderboardSection").innerHTML = html;
+      })
+      .catch(err => {
+        document.getElementById("leaderboardSection").innerHTML = "Error: " + err;
+      });
+  </script>
+</body>
+</html>

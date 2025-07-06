@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Leaderboard – XP Statistiky</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8f8fa; padding:40px; }
+    h1 { text-align:center; color: #21767a;}
+    .btns { display: flex; gap: 10px; justify-content: center; margin: 24px 0;}
+    button { padding:10px 22px; border-radius:9px; border:none; background:#21767a; color:#fff; font-size:1em; cursor:pointer;}
+    button.active { background:#44cc9e; color:#17323a;}
+    table { margin:40px auto; background:#fff; border-radius:11px; box-shadow:0 2px 16px #8ad3e755; }
+    th,td { padding:12px 24px; font-size:1.15em;}
+    th { background:#e0f0f6; color:#145d62;}
+    tr:nth-child(even) td { background:#f3fbff;}
+    td { text-align:center; }
+  </style>
+</head>
+<body>
+  <h1>Leaderboard – XP Statistiky (Email)</h1>
+  <a href="laderboard.html" style="display:inline-block;margin-bottom:20px;padding:10px 20px;background:#e1e7ea;color:#18505e;font-weight:bold;border-radius:10px;text-decoration:none;box-shadow:0 2px 9px #cce6e7;">
+  ← Zpět na hlavní leaderboard
+</a>
+
+  <div class="btns">
+    <button onclick="loadLeaderboard('week')" id="btn-week">Aktuální týden</button>
+    <button onclick="loadLeaderboard('lastWeek')" id="btn-lastWeek">Minulý týden</button>
+    <button onclick="loadLeaderboard('month')" id="btn-month" class="active">Aktuální měsíc</button>
+    <button onclick="loadLeaderboard('lastMonth')" id="btn-lastMonth">Minulý měsíc</button>
+  </div>
+  <div id="leaderboard">Načítám data...</div>
+
+<script>
+  // Firebase config (zachovej svůj)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCfPJJL8cbfxmpWpHG5_icQOZjzGWSpeZI",
+    authDomain: "drunk-punk.firebaseapp.com",
+    projectId: "drunk-punk",
+    storageBucket: "drunk-punk.firebasestorage.app",
+    messagingSenderId: "749798531604",
+    appId: "1:749798531604:web:9e702aee7c9a2599627d01",
+    measurementId: "G-JSFRP622EL"
+  };
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // Pomocné funkce na range:
+  function getPeriodRange(type) {
+    const now = new Date();
+    let start, end;
+    if(type === "week") {
+      // Aktuální týden (pondělí-neděle)
+      const day = now.getDay() || 7; // neděle = 7
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day + 1);
+      start.setHours(0,0,0,0);
+      end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 7);
+      end.setHours(0,0,0,0);
+    } else if(type === "lastWeek") {
+      const day = now.getDay() || 7;
+      end = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day + 1);
+      end.setHours(0,0,0,0);
+      start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - 7);
+      start.setHours(0,0,0,0);
+    } else if(type === "month") {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    } else if(type === "lastMonth") {
+      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      end = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+    return { start: start.getTime(), end: end.getTime() };
+  }
+
+  function xpZaObdobi(xpHistory, start, end) {
+    if (!Array.isArray(xpHistory) || !xpHistory.length) return 0;
+    // Najdi XP na začátku a konci období
+    let minXP = null, maxXP = null;
+    for (var i = 0; i < xpHistory.length; i++) {
+      var x = xpHistory[i];
+      if (x.timestamp <= start && (minXP === null || x.xp > minXP)) minXP = x.xp;
+      if (x.timestamp <= end && (maxXP === null || x.xp > maxXP)) maxXP = x.xp;
+    }
+    if (maxXP === null) maxXP = minXP;
+    if (minXP === null) minXP = 0;
+    return maxXP - minXP;
+  }
+
+  function setActiveBtn(type) {
+    ["week", "lastWeek", "month", "lastMonth"].forEach(id => {
+      document.getElementById("btn-"+id).classList.remove("active");
+    });
+    document.getElementById("btn-"+type).classList.add("active");
+  }
+
+  function loadLeaderboard(periodType = "month") {
+    setActiveBtn(periodType);
+    document.getElementById("leaderboard").innerHTML = "Načítám data...";
+    db.collection("pi_saves").get()
+      .then(function(snapshot) {
+        let data = [];
+        const { start, end } = getPeriodRange(periodType);
+        snapshot.forEach(function(doc) {
+          let d = doc.data();
+          let username = d && d.data && d.data.piUser ? d.data.piUser : doc.id;
+          let xpHistory = (d.data && d.data.xpHistory) ? d.data.xpHistory : [];
+          let xpObdobi = xpZaObdobi(xpHistory, start, end);
+          data.push({ username: username, xp: xpObdobi });
+        });
+        data = data.filter(x => x.xp > 0);
+        data.sort(function(a, b){ return b.xp - a.xp; });
+        let html = "<table><tr><th>#</th><th>Pi Username</th><th>XP</th></tr>";
+        for (let i = 0; i < data.length; i++) {
+          html += "<tr><td>"+(i+1)+"</td><td>"+data[i].username+"</td><td>"+data[i].xp+"</td></tr>";
+        }
+        html += "</table>";
+        document.getElementById("leaderboard").innerHTML = html || "Žádná data";
+      })
+      .catch(function(err) {
+        document.getElementById("leaderboard").innerHTML = "Chyba: "+err.message;
+      });
+  }
+
+  loadLeaderboard("month");
+</script>
+</body>
+</html>
