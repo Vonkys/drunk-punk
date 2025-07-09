@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Drunk - Punk</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #fef6fa 0%, #e1fcff 100%); margin: 0; padding: 0; text-align: center;}
+    .nav-bar { position: fixed; top: 0; left: 0; width: 100vw; background: #2196f3; color: white; display: flex; justify-content: flex-end; gap: 2px; z-index: 1000; box-shadow: 0 2px 8px #0002; padding: 7px 0; }
+    .nav-link { color: white; padding: 7px 24px; text-decoration: none; font-weight: bold; font-size: 1.07em; border-radius: 0 0 10px 10px; transition: background 0.18s; display: flex; align-items: center; gap: 6px; }
+    .nav-link.active, .nav-link:hover { background: #1760a3; }
+    body { padding-top: 48px; }
+    .zpet-link { display: inline-block; margin: 20px 0 4px 0; color: #1760a3; background: #e9f6fd; padding: 7px 17px; border-radius: 9px; text-decoration: none; font-weight: bold; font-size: 1.08em; box-shadow: 0 1px 8px #bbe8fd44; transition: background 0.13s, color 0.13s; }
+    .zpet-link:hover { background: #b7e0ed; color: #124061; }
+    h2 { margin: 16px 0 7px 0; color: #208278; font-size: 2.35em;}
+    #balances { text-align:center; margin: 10px 0; font-weight: bold; font-size: 1.2em;}
+    .shop-section { background: #fff; border-radius: 15px; box-shadow: 0 2px 14px #b7d9db35; display: inline-block; margin: 18px auto 0 auto; padding: 18px 28px 18px 28px; min-width: 220px; max-width: 98vw; text-align: left; }
+    .shop-item { margin-bottom: 24px; }
+    .item-title { font-weight: bold; font-size: 1.22em; color: #217c5e; margin-bottom: 2px; display: flex; align-items: center; gap: 11px;}
+    .item-desc { color: #555; font-size: 1em; margin-bottom: 5px;}
+    .item-btn { background: #37af7b; color: #fff; border: none; border-radius: 7px; font-size: 1.05em; padding: 7px 22px; cursor: pointer; font-weight: 600; margin-top: 3px;}
+    .item-btn:disabled { background: #9dbdae; cursor: not-allowed;}
+    .item-btn:hover:not(:disabled) { background: #136652; }
+    .pronajato { color:#e26e08; font-size: 1.08em; margin-left: 8px;}
+    #shop-status { color:#b24b4b; font-weight:600; margin:14px auto 0 auto; display:block;}
+    #shop-status.ok { color:#217c5e; }
+    #chytani { margin:28px auto 0 auto; }
+    #chytitBtn { background: #22c984; color: #fff; border: none; border-radius: 11px; box-shadow: 0 2px 12px #44a66a25; font-weight: 900; letter-spacing: 1px; font-size:1.12em; padding: 14px 40px; cursor:pointer; transition: background 0.14s, box-shadow 0.14s; margin-bottom:10px;}
+    #chytitBtn:active { background: #139259; }
+    .result-box { margin:30px auto 12px auto; min-height:56px; background:#e6fff3; border-radius:15px; box-shadow:0 2px 12px #7fffd455; font-size:1.22em; color:#136652; font-weight:700; display:inline-block; padding:15px 38px 13px 38px;}
+    /* --- Fishing slots --- */
+    #fishing-slots { display: flex; justify-content: center; gap: 26px; margin:36px auto 10px auto; flex-wrap:wrap;}
+    .slot { background:#f6fdff; border-radius:13px; box-shadow:0 2px 12px #b6eafc38; padding:19px 22px 16px 22px; min-width:220px; max-width:99vw; margin-bottom:12px; }
+    .slot-title { font-weight: bold; font-size:1.19em; color:#1c6375; margin-bottom: 10px; }
+    .slot-status { margin:7px 0 11px 0; color:#217c5e; min-height:36px;}
+    .progress-bar-bg { width:100%; background:#dbf3ff; border-radius: 8px; height:21px; margin-bottom:6px; overflow:hidden; border:1px solid #b6eafc;}
+    .progress-bar-fill { background:#22c984; height:100%; transition:width 0.25s; }
+    .slot-btn { background: #2a87c3; color: #fff; border:none; border-radius:7px; font-weight:600; font-size:1.04em; padding:7px 23px; cursor:pointer; margin:0 2px;}
+    .slot-btn:disabled { background: #b8d8eb; cursor:not-allowed;}
+    .slot-btn-boost { background: #e0b315; color: #422d00;}
+    .slot-btn-boost:disabled { background: #f6eab7;}
+    .collect-btn { background: #23c96e; color: #fff; font-size:1.09em; font-weight:700; border:none; border-radius:8px; padding:10px 34px; cursor:pointer; margin:5px 0 0 0;}
+    .collect-btn:disabled { background:#b8d8cb;}
+    .result-box-slot { margin:16px auto 7px auto; min-height:38px; background:#e6fff3; border-radius:10px; box-shadow:0 2px 8px #7fffd455; font-size:1.1em; color:#136652; font-weight:700; display:inline-block; padding:9px 18px 8px 18px;}
+    @media (max-width:900px){ #fishing-slots{gap:10px;} .slot{padding:10px 5px;} }
+    @media (max-width:600px){ body { padding-top: 90px; } .nav-bar { justify-content: center; flex-wrap: wrap; font-size: 0.97em; } .nav-link { padding:7px 8px;font-size:1em; } .zpet-link { padding: 7px 6vw; font-size:1em;} h2 { font-size: 2.1em; } .shop-section { padding:12px; } #chytitBtn { font-size:1em; padding:12px 8vw;} #fishing-slots{gap:6px;} }
+  </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <a href="pestovani.html" class="nav-link">🌱 Grow Sh*t</a>
+    <a href="vyroba.html" class="nav-link">⚗️ Brewing</a>
+    <a href="jzd.html" class="nav-link">🐷 Coop</a>
+    <a href="sklad.html" class="nav-link">📦 Stash</a>
+    <a href="hotel.html" class="nav-link">🏨 Motel</a>
+    <a href="pub.html" class="nav-link">🏡 Bar</a>
+    <a href="market.html" class="nav-link">🏪 Bazaar</a>
+    <a href="finance.html" class="nav-link">💰 Wallet</a>
+    <a class="nav-link nav-link-stats" href="statistiky.html">📊</a>
+  </div>
+  <a href="vyroba.html" class="zpet-link">← Back to production</a>
+  <h2>🎣 Fishing</h2>
+   <div id="balances" style="text-align:center; margin: 10px 0; font-weight: bold; font-size: 1.2em;">
+ <b>💵 Balance: <span id="money"></span> $<br> 
+  🪙 PI Coins: <span id="pi-balance"></span></b> ϖ
+   <span id="shop-status"></span>
+</div>
+  <div class="shop-section">
+  <div style="font-size:1.07em;font-weight:bold;color:#207c7c;margin-bottom:10px;">Regular gear</div>
+  <div class="shop-item">
+    <div class="item-title">🎣 Fishing Rod ($)
+      <span id="prutStatus" class="pronajato"></span>
+      <span style="color:#888;margin-left:7px;" id="invPrut-amount"></span>
+    </div>
+    <div class="item-desc">Rent a regular fishing rod. After each attempt, you have to rent it again.<br><b>Price: 50 $</b></div>
+    <button class="item-btn" id="buyPrutBtn" onclick="pronajmoutPrut()">Rent rod</button>
+  </div>
+
+  <div class="shop-item">
+    <div class="item-title">🎣 Permanent Fishing Rod ($)
+      <span id="permanent-prut-status" style="color:#0a0; margin-left:7px;"></span>
+    </div>
+    <div class="item-desc">Buy this rod forever. Never pay for rods again!<br><b>Price: 1,000,000 $</b></div>
+    <button class="item-btn" id="buyPermanentPrutBtn" onclick="buyPermanentPrut()">Buy permanent rod</button>
+  </div>
+
+  <div class="shop-item">
+    <div class="item-title">🪱 Bait ($)
+      <span id="navnadaStatus" class="pronajato"></span>
+      <span style="color:#888;margin-left:7px;" id="invNavnada-amount"></span>
+    </div>
+    <div class="item-desc">No bait, no catch! You need a new one for every attempt.<br><b>Price: 20 $</b></div>
+    <button class="item-btn" id="buyNavnadaBtn" onclick="pronajmoutNavnadu()">Buy bait</button>
+  </div>
+
+  <hr style="margin:18px 0 12px 0;border:0;border-top:2px dashed #c8c8fa;">
+
+  <div style="font-size:1.07em;font-weight:bold;color:#b17316;margin-bottom:10px;">Premium gear (ϖ only)</div>
+
+  <div class="shop-item" style="background:#fffbea;">
+    <div class="item-title">🎣 Fishing Rod (ϖ)
+      <span id="prutPiStatus" class="pronajato"></span>
+      <span style="background:#ffe396;color:#ad8700;padding:2px 10px;border-radius:7px;font-size:0.92em;margin-left:7px;">ϖ EXCLUSIVE</span>
+      <span style="color:#888;margin-left:7px;" id="invPrutPi-amount"></span>
+    </div>
+    <div class="item-desc">Premium fishing rod.<br>Better loot, chance for Pi or $!<br><b>Price: 20 ϖ</b></div>
+    <button class="item-btn" id="buyPrutPiBtn" onclick="pronajmoutPrutPi()">Rent rod (ϖ)</button>
+  </div>
+
+  <div class="shop-item" style="background:#fffbea;">
+    <div class="item-title">🪱 Bait (ϖ)
+      <span id="navnadaPiStatus" class="pronajato"></span>
+      <span style="background:#ffe396;color:#ad8700;padding:2px 10px;border-radius:7px;font-size:0.92em;margin-left:7px;">ϖ EXCLUSIVE</span>
+      <span style="color:#888;margin-left:7px;" id="invNavnadaPi-amount"></span>
+    </div>
+    <div class="item-desc">Premium bait. Can be used with any rod.<br><b>Price: 5 ϖ</b></div>
+    <button class="item-btn" id="buyNavnadaPiBtn" onclick="pronajmoutNavnadaPi()">Buy bait (ϖ)</button>
+  </div>
+  </div>
+
+  <!-- --- SLOTS --- -->
+  <div id="fishing-slots"></div>
+
+<script>
+// ==== INVENTORY + BALANCE HELPERS ====
+function getInvPrut() { return parseInt(localStorage.getItem("invPrut")||"0",10);}
+function setInvPrut(v) { localStorage.setItem("invPrut", v);}
+function getHasPermanentPrut() { return localStorage.getItem("hasPermanentPrut")==="true";}
+function setHasPermanentPrut(v) { localStorage.setItem("hasPermanentPrut",v?"true":"false");}
+function getInvNavnada() { return parseInt(localStorage.getItem("invNavnada")||"0",10);}
+function setInvNavnada(v) { localStorage.setItem("invNavnada", v);}
+function getInvPrutPi() { return parseInt(localStorage.getItem("invPrutPi")||"0",10);}
+function setInvPrutPi(v) { localStorage.setItem("invPrutPi", v);}
+function getInvNavnadaPi() { return parseInt(localStorage.getItem("invNavnadaPi")||"0",10);}
+function setInvNavnadaPi(v) { localStorage.setItem("invNavnadaPi", v);}
+function getPi() { return parseInt(localStorage.getItem("lihobaronPi")||"0",10);}
+function setPi(v) { localStorage.setItem("lihobaronPi", v);}
+function getMoney() { return parseInt(localStorage.getItem("lihobaronFarmCoins")||"0",10);}
+function setMoney(v) { localStorage.setItem("lihobaronFarmCoins", v);}
+function stavPrachy() { document.getElementById("money").innerText = getMoney();}
+function renderPiBalance() { document.getElementById("pi-balance").innerText = getPi(); }
+
+// ==== SHOP STATUS UPDATE ====
+function updateShopStatus() {
+  document.getElementById("prutStatus").textContent = (getInvPrut()>0 || getHasPermanentPrut()) ? "rented" : "";
+  document.getElementById("navnadaStatus").textContent = getInvNavnada()>0 ? "ready" : "";
+  document.getElementById("prutPiStatus").textContent = getInvPrutPi()>0 ? "rented" : "";
+  document.getElementById("navnadaPiStatus").textContent = getInvNavnadaPi()>0 ? "ready" : "";
+
+  document.getElementById("invPrut-amount").textContent = "(You own: " + getInvPrut() + ")";
+  document.getElementById("invNavnada-amount").textContent = "(You own: " + getInvNavnada() + ")";
+  document.getElementById("invPrutPi-amount").textContent = "(You own: " + getInvPrutPi() + ")";
+  document.getElementById("invNavnadaPi-amount").textContent = "(You own: " + getInvNavnadaPi() + ")";
+
+  var permDiv = document.getElementById("permanent-prut-status");
+  if (permDiv) {
+    permDiv.textContent = getHasPermanentPrut() ? "(Owned forever!)" : "";
+  }
+  var permBtn = document.getElementById("buyPermanentPrutBtn");
+  if(permBtn) permBtn.disabled = getHasPermanentPrut();
+}
+
+// ==== SHOP BUY FUNCTIONS ====
+function pronajmoutPrut() {
+  if(getHasPermanentPrut()) { showShopMsg("You have the permanent rod!"); return;}
+  if(getMoney()<50) { showShopMsg("Not enough $!"); return;}
+  setMoney(getMoney()-50); setInvPrut(getInvPrut()+1);
+  stavPrachy(); updateShopStatus();
+  showShopMsg("Fishing rod rented!");
+}
+function buyPermanentPrut() {
+  if(getHasPermanentPrut()) { showShopMsg("Already owned!"); return;}
+  if(getMoney() < 1000000) { showShopMsg("Not enough money!"); return;}
+  setMoney(getMoney() - 1000000);
+  setHasPermanentPrut(true);
+  stavPrachy();
+  updateShopStatus();
+  showShopMsg("Permanent rod unlocked!");
+  document.getElementById("buyPermanentPrutBtn").disabled = true;
+}
+function pronajmoutNavnadu() {
+  if(getMoney()<20) { showShopMsg("Not enough $!"); return;}
+  setMoney(getMoney()-20); setInvNavnada(getInvNavnada()+1);
+  stavPrachy(); updateShopStatus();
+  showShopMsg("Bait bought!");
+}
+function pronajmoutPrutPi() {
+  if(getPi()<20) { showShopMsg("Not enough PI!"); return;}
+  setPi(getPi()-20); setInvPrutPi(getInvPrutPi()+1);
+  renderPiBalance(); updateShopStatus();
+  showShopMsg("Premium rod rented!");
+}
+function pronajmoutNavnadaPi() {
+  if(getPi()<5) { showShopMsg("Not enough PI!"); return;}
+  setPi(getPi()-5); setInvNavnadaPi(getInvNavnadaPi()+1);
+  renderPiBalance(); updateShopStatus();
+  showShopMsg("Premium bait bought!");
+}
+function showShopMsg(txt) {
+  document.getElementById("shop-status").textContent = txt;
+  setTimeout(function(){ document.getElementById("shop-status").textContent = ""; }, 1700);
+}
+
+// ==== FISHING SLOTS PERSISTENCE ====
+const FISHING_SLOT_COUNT = 3;
+const FISHING_TIME = 300;
+const FISHING_BOOST_COST = 10;
+
+function load(key, def) {
+  try { let d=localStorage.getItem(key); if(!d)return def; return JSON.parse(d);}catch{return def;}
+}
+function save(key, val) {
+  localStorage.setItem(key, JSON.stringify(val));
+}
+
+function saveFishingSlots() {
+  save("fishingSlots", slots.map(function(slot){
+    return {
+      state: slot.state,
+      startTime: slot.startTime,
+      duration: slot.duration,
+      boosted: slot.boosted,
+      prut: slot.prut,
+      navnada: slot.navnada,
+      result: slot.result
+    }
+  }));
+}
+function loadFishingSlots() {
+  let arr = load("fishingSlots", null);
+  if (!arr || !Array.isArray(arr) || arr.length !== FISHING_SLOT_COUNT) return null;
+  return arr.map(function(slot) {
+    return Object.assign({
+      state: "idle",
+      startTime: 0,
+      duration: FISHING_TIME,
+      boosted: false,
+      result: null,
+      prut: null,
+      navnada: null
+    }, slot);
+  });
+}
+
+var slots = loadFishingSlots();
+if (!slots) {
+  slots = [];
+  for (let i=0;i<FISHING_SLOT_COUNT;i++) {
+    slots.push({
+      state: "idle",
+      startTime: 0,
+      duration: FISHING_TIME,
+      boosted: false,
+      result: null,
+      prut: null,
+      navnada: null
+    });
+  }
+}
+
+function renderFishingSlots() {
+  let html = "";
+  for(let i=0;i<slots.length;i++) {
+    let slot = slots[i];
+    html += "<div class='slot' id='slot"+i+"'>";
+    html += "<div class='slot-title'>🎣 Fish Slot "+(i+1)+"</div>";
+    if(slot.state === "idle") {
+      html += "<div class='slot-status'>Ready to fish!</div>";
+      html += "<button class='slot-btn' onclick='startFishingSlot("+i+")'>Fish!</button>";
+    } else if(slot.state === "waiting") {
+      let elapsed = Math.max(0, Math.floor((Date.now()-slot.startTime)/1000));
+      let perc = Math.min(100, Math.floor(elapsed/slot.duration*100));
+      let timeLeft = Math.max(0, slot.duration - elapsed);
+      let min = Math.floor(timeLeft / 60);
+      let sec = timeLeft % 60;
+      let timeStr = min + "m " + sec + "s";
+      html += "<div class='slot-status'>Fishing... " + (slot.boosted ? "(boosted) " : "") + timeStr + " left</div>";
+      html += "<div class='progress-bar-bg'><div class='progress-bar-fill' style='width:"+perc+"%'></div></div>";
+      if(!slot.boosted)
+        html += "<button class='slot-btn slot-btn-boost' onclick='boostFishingSlot("+i+")'>Speed up (-10 ϖ)</button>";
+    } else if(slot.state === "ready") {
+      html += "<div class='slot-status'>🎉 Result ready!</div>";
+      if(slot.result)
+        html += "<div class='result-box-slot'>"+slot.result.text+"</div>";
+      html += "<button class='collect-btn' onclick='collectFishingSlot("+i+")'>Collect!</button>";
+    }
+    html += "</div>";
+  }
+  document.getElementById("fishing-slots").innerHTML = html;
+  saveFishingSlots();
+}
+
+function getFishingSlotResultText(prut, navnada) {
+  let items = [
+    { text: "🐟 Fish", type: "fish" },
+    { text: "🦐 Shrimp", type: "shrimp" },
+    { text: "🦀 Crab", type: "crab" },
+    { text: "💩 Some trash", type: "trash" },
+    { text: "👞 Old boot", type: "boot" }
+  ];
+  if (prut === "pi") {
+    items.push(
+      { text: "💵 300 $ found!", type: "money", value: 300 },
+      { text: "🪙 50 ϖ found!", type: "pi", value: 50 }
+    );
+  }
+  let idx = Math.floor(Math.random() * items.length);
+  let item = items[idx];
+  if(item.type === "money") setMoney(getMoney() + item.value);
+  if(item.type === "pi") setPi(getPi() + item.value);
+  return item.text;
+}
+
+function startFishingSlot(slotIdx) {
+  let slot = slots[slotIdx];
+  if(slot.state !== "idle") return;
+  let prut = getInvPrutPi()>0 ? "pi" : (getHasPermanentPrut() ? "$perm" : (getInvPrut()>0 ? "$" : null));
+  let navnada = getInvNavnadaPi()>0 ? "pi" : (getInvNavnada()>0 ? "$" : null);
+  if(!prut || !navnada) {
+    alert("You need a rod and a bait for this slot!");
+    return;
+  }
+  if(prut==="pi") setInvPrutPi(getInvPrutPi()-1);
+  if(prut==="$") setInvPrut(getInvPrut()-1);
+  // "$perm" se neodečítá, máš ho nafurt!
+  if(navnada==="pi") setInvNavnadaPi(getInvNavnadaPi()-1);
+  if(navnada==="$") setInvNavnada(getInvNavnada()-1);
+  updateShopStatus();
+  stavPrachy();
+  renderPiBalance();
+
+  slot.state = "waiting";
+  slot.startTime = Date.now();
+  slot.duration = FISHING_TIME;
+  slot.boosted = false;
+  slot.result = null;
+  slot.prut = prut;
+  slot.navnada = navnada;
+  renderFishingSlots();
+  tickFishingSlot(slotIdx);
+}
+
+function boostFishingSlot(slotIdx) {
+  let slot = slots[slotIdx];
+  if(slot.state!=="waiting" || slot.boosted) return;
+  let pi = getPi();
+  if(pi<FISHING_BOOST_COST) {
+    alert("Not enough ϖ to speed up!");
+    return;
+  }
+  setPi(pi-FISHING_BOOST_COST);
+  slot.duration = Math.ceil(slot.duration/2);
+  slot.boosted = true;
+  renderPiBalance();
+  renderFishingSlots();
+}
+
+function tickFishingSlot(idx) {
+  let slot = slots[idx];
+  if(slot.state!=="waiting") return;
+  let elapsed = Math.max(0, Math.floor((Date.now()-slot.startTime)/1000));
+  if(elapsed >= slot.duration) {
+    slot.state = "ready";
+    slot.result = { text: getFishingSlotResultText(slot.prut, slot.navnada) };
+    renderFishingSlots();
+    stavPrachy();
+    renderPiBalance();
+  } else {
+    renderFishingSlots();
+    setTimeout(function(){ tickFishingSlot(idx); }, 900);
+  }
+}
+
+function collectFishingSlot(idx) {
+  let slot = slots[idx];
+  slot.state = "idle";
+  slot.startTime = 0;
+  slot.result = null;
+  slot.duration = FISHING_TIME;
+  slot.boosted = false;
+  slot.prut = null;
+  slot.navnada = null;
+  renderFishingSlots();
+}
+
+window.onload = function() {
+  stavPrachy();
+  renderPiBalance();
+  updateShopStatus();
+  renderFishingSlots();
+  slots.forEach(function(slot, i){
+    if(slot.state==="waiting") tickFishingSlot(i);
+  });
+};
+</script>
+</body>
+</html>
