@@ -376,7 +376,7 @@
 }
 
     // Load game
-   function loadGameFromCloud() {
+  function loadGameFromCloud() {
     var username = getPiUsername();
     if (!username) {
         document.getElementById("cloudMsg").innerText = "You must be logged in with Pi!";
@@ -385,16 +385,33 @@
     firestore.collection("pi_saves").doc(username).get().then(function(doc) {
         if (doc.exists && doc.data().data) {
             var data = doc.data().data;
+
+            var latestSave = null;
+            var latestTimestamp = 0;
+
             for (var k in data) {
-                // XP history musí být vždy jako JSON string!
-                if (k === "xpHistory" && Array.isArray(data[k])) {
-                    localStorage.setItem(k, JSON.stringify(data[k]));
-                } else {
-                    localStorage.setItem(k, data[k]);
+                if (data[k] && typeof data[k] === "object" && data[k].timestamp) {
+                    if (data[k].timestamp > latestTimestamp) {
+                        latestTimestamp = data[k].timestamp;
+                        latestSave = data[k];
+                    }
                 }
             }
-            document.getElementById("cloudMsg").innerText = "✅ Game loaded from cloud! Reloading...";
-            setTimeout(function() { location.reload(); }, 1200);
+
+            if (latestSave) {
+                for (var k in latestSave) {
+                    if (k === "xpHistory" && Array.isArray(latestSave[k])) {
+                        localStorage.setItem(k, JSON.stringify(latestSave[k]));
+                    } else {
+                        localStorage.setItem(k, latestSave[k]);
+                    }
+                }
+                document.getElementById("cloudMsg").innerText = "✅ Game loaded from cloud! Reloading...";
+                setTimeout(function() { location.reload(); }, 1200);
+            } else {
+                document.getElementById("cloudMsg").innerText = "No valid save slot found.";
+            }
+
         } else {
             document.getElementById("cloudMsg").innerText = "No save found in the cloud.";
         }
@@ -404,24 +421,41 @@
 }
 
 
-  function autoLoadGameFromCloud() {
-  var username = getPiUsername();
-  if (!username) return;
-  firestore.collection("pi_saves").doc(username).get().then(function(doc) {
-    if (doc.exists && doc.data().data) {
-      var data = doc.data().data;
-      for (var k in data) {
-        if (k === "xpHistory" && Array.isArray(data[k])) {
-          localStorage.setItem(k, JSON.stringify(data[k]));
-        } else {
-          localStorage.setItem(k, data[k]);
+function autoLoadGameFromCloud() {
+    var username = getPiUsername();
+    if (!username) return;
+
+    firestore.collection("pi_saves").doc(username).get().then(function(doc) {
+        if (doc.exists && doc.data().data) {
+            var data = doc.data().data;
+
+            var latestSave = null;
+            var latestTimestamp = 0;
+
+            for (var k in data) {
+                if (data[k] && typeof data[k] === "object" && data[k].timestamp) {
+                    if (data[k].timestamp > latestTimestamp) {
+                        latestTimestamp = data[k].timestamp;
+                        latestSave = data[k];
+                    }
+                }
+            }
+
+            if (latestSave) {
+                for (var k in latestSave) {
+                    if (k === "xpHistory" && Array.isArray(latestSave[k])) {
+                        localStorage.setItem(k, JSON.stringify(latestSave[k]));
+                    } else {
+                        localStorage.setItem(k, latestSave[k]);
+                    }
+                }
+                document.getElementById("cloudMsg").innerText = "✅ Game auto-loaded!";
+                setTimeout(function() { location.reload(); }, 900);
+            }
         }
-      }
-      document.getElementById("cloudMsg").innerText = "✅ Game auto-loaded!";
-      setTimeout(function() { location.reload(); }, 900);
-    }
-  });
+    });
 }
+
 
 
     </script>
