@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Sugar House</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<style>
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f9fcfd; margin: 0; padding: 0; text-align: center; padding-top: 48px; }
+.nav-bar { position: fixed; top: 0; left: 0; width: 100vw; background: #2196f3; color: white; display: flex; justify-content: flex-end; gap: 2px; z-index: 1000; box-shadow: 0 2px 8px #0002; padding: 7px 0; }
+.nav-link { color: white; padding: 7px 24px; text-decoration: none; font-weight: bold; font-size: 1.07em; border-radius: 0 0 10px 10px; transition: background 0.18s; display: flex; align-items: center; gap: 6px; }
+.nav-link.active, .nav-link:hover { background: #1760a3; }
+.zpet-link { display: inline-block; margin: 20px 0 4px 0; color: #1760a3; background: #e9f6fd; padding: 7px 17px; border-radius: 9px; text-decoration: none; font-weight: bold; font-size: 1.08em; box-shadow: 0 1px 8px #bbe8fd44; transition: background 0.13s, color 0.13s; }
+.zpet-link:hover { background: #b7e0ed; color: #124061; }
+h2 { margin: 16px 0 7px 0; color: #217c5e; font-size: 2.5em;}
+.section-title { color: #217c5e; font-size: 1.4em; margin-bottom: 8px; font-weight: 700; }
+#machinesShop { margin: 15px auto; background: #fff; display: inline-block; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px #0001; }
+.machine-card { display: inline-block; background: #f5e6cc; margin: 5px; padding: 8px 14px; border-radius: 6px; font-size: 1em; }
+.machine-card button { background: #4caf50; color: white; border: none; padding: 3px 8px; border-radius: 4px; cursor: pointer; }
+.machine-card button:hover { background: #3e8e41; }
+.cards-flex { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin: 20px 0; }
+.phase-card { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px #ccc; padding: 20px; min-width: 200px; max-width: 300px; text-align: center; border-top: 4px solid #4caf50; }
+.phase-title { font-size: 1.2em; font-weight: 700; color: #217c5e; margin-bottom: 6px; }
+.phase-info { font-size: 1em; margin: 4px 0 7px 0; }
+.success { color: #4caf50; }
+.status { color: #e53935; }
+.prod-btn { background: #4caf50; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; }
+.prod-btn:hover { background: #43a047; }
+.prod-btn[disabled] { background: #ccc; cursor: not-allowed; }
+</style>
+</head>
+<body>
+<div class="nav-bar">
+<a href="pestovani.html" class="nav-link">🌱 Grow</a>
+<a href="vyroba.html" class="nav-link active">⚗️ Craftworks</a>
+<a href="jzd.html" class="nav-link">🐷 Coop</a>
+<a href="sklad.html" class="nav-link">📦 Stash</a>
+<a href="hotel.html" class="nav-link">🏨 Motel</a>
+<a href="pub.html" class="nav-link">🏡 Bar</a>
+<a href="market.html" class="nav-link">🏪 Bazaar</a>
+<a href="finance.html" class="nav-link">💰 Wallet</a>
+<a class="nav-link nav-link-stats" href="statistiky.html">📊</a>
+</div>
+<a href="vyroba.html" class="zpet-link">← Back to production</a>
+<h2>🍬 Sugar House</h2>
+<div id="balances" style="text-align:center; margin: 10px 0; font-weight: bold; font-size: 1.2em;">
+<b>💵 Balance: <span id="stavPrachy"></span><br>
+🪙 PI Coins: <span id="pi-balance"></span></b> ϖ
+</div>
+<div class="section" id="machinesShop"></div>
+<div class="cards-flex" id="productionSections"></div>
+<div class="section" id="vyrobaStatus"></div>
+<script>
+const skladLabels = {
+  trtina: "Sugar Cane",
+  sugar: "Sugar",
+  candy: "Candy",
+  lollipop: "Lollipop"
+};
+const machines = [
+  {key:"sugarMill", name:"🧂 Sugar Mill", price:17000, input:"trtina", output:"sugar", time:660000},
+  {key:"candyMaker", name:"🍬 Candy Maker", price:24000, input:"sugar", output:"candy", time:1080000},
+  {key:"lollipopMachine", name:"🍭 Lollipop Machine", price:35000, input:"sugar", inputQty:2, output:"lollipop", time:1320000}
+];
+function getPi() { return JSON.parse(localStorage.getItem("lihobaronPi") || "0"); }
+function renderPiBalance() { document.getElementById("pi-balance").textContent = getPi(); }
+function load(k,d) { try { let x=localStorage.getItem(k); return x?JSON.parse(x):d; } catch { return d; } }
+function save(k,v) { localStorage.setItem(k,JSON.stringify(v)); }
+function getMoney() { return load("lihobaronFarmCoins",0); }
+function setMoney(m) { save("lihobaronFarmCoins",m); }
+function getSklad() { return load("lihobaronFarmStorage",{}); }
+function setSklad(s) { save("lihobaronFarmStorage",s); }
+function stavPrachy() { document.getElementById("stavPrachy").innerText=getMoney()+" $"; }
+function vypisStatus(txt,ok){ let e=document.getElementById("vyrobaStatus"); e.innerHTML="<span class='"+(ok?"success":"status")+"'>"+txt+"</span>"; setTimeout(()=>{e.innerHTML='';},2300); }
+function renderMachinesShop(){
+  let html = `<div class='section-title'>🛒 Machine Shop</div>`;
+  machines.forEach(m=>{
+    if(load(m.key+"Bought",false)){
+      html+=`<div class='machine-card'>✔️ ${m.name} owned</div>`;
+    }else{
+      html+=`<div class='machine-card'>${m.name} (${m.price}$) <button onclick='buyMachine("${m.key}")'>Buy</button></div>`;
+    }
+  });
+  document.getElementById("machinesShop").innerHTML=html;
+}
+function buyMachine(k) {
+  let m = machines.find(x => x.key === k);
+  let money = getMoney();
+  if (load(k + "Bought", false)) {
+    vypisStatus("Already owned!", 0);
+    return;
+  }
+  if (money < m.price) {
+    vypisStatus("Not enough money!", 0);
+    return;
+  }
+
+  // zaplatíme
+  setMoney(money - m.price);
+  // uložíme flag
+  save(k + "Bought", true);
+
+  // přidáme do seznamu strojů
+  let ownedMachines = JSON.parse(localStorage.getItem("lihobaronMachines") || "[]");
+  if (!ownedMachines.includes(k)) {
+    ownedMachines.push(k);
+    localStorage.setItem("lihobaronMachines", JSON.stringify(ownedMachines));
+  }
+
+  vypisStatus(`${m.name} bought!`, 1);
+  stavPrachy();
+  renderMachinesShop();
+  renderProduction();
+}
+
+function renderProduction(){
+  let html="";
+  machines.forEach(m=>{
+    html+=`<div class='phase-card'>`;
+    html+=`<div class='phase-title'>${m.name} production</div>`;
+   html += `<div class='phase-info'><b>Needs:</b> ${(m.inputQty || 1)}× ${skladLabels[m.input] || m.input}</div>`;
+    if(!load(m.key+"Bought",false)){
+      html+=`<div class='status'>Buy the ${m.name} first!</div>`;
+    }else if(isReady(m.key)){
+      html+=`<div class='success'>${m.output} is ready!</div>`;
+      html+=`<button class='prod-btn' onclick='collect("${m.key}")'>Collect ${m.output}</button>`;
+    }else if(localStorage.getItem(m.key+"End")){
+      let end=parseInt(localStorage.getItem(m.key+"End"),10);
+      let left=Math.max(0,end-Date.now());
+      let pct=Math.min(100,100-(100*left/m.time));
+      let min=Math.floor(left/60000);
+      let sec=Math.floor((left%60000)/1000);
+      html+=`<div style='width:90%;margin:8px auto;height:18px;background:#eee;border-radius:8px;'><div style='height:100%;background:#4caf50;width:${pct}%;'></div></div>`;
+      html+=`<div>Processing: ${min}m ${(sec<10?"0":"")+sec}s</div>`;
+      html+=`<button class='prod-btn' disabled>Processing...</button>`;
+    }else{
+      let s=getSklad();
+      if((s[m.input]||0)<(m.inputQty||1)){
+        html+=`<div class='status'>Need more ${skladLabels[m.input] || m.input}!</div>`;
+        html+=`<button class='prod-btn' disabled>Start</button>`;
+      }else{
+        html+=`<button class='prod-btn' onclick='start("${m.key}")'>Start</button>`;
+      }
+    }
+    html+=`<div style='margin-top:10px;'><b>${m.output}:</b> ${(getSklad()[m.output]||0)}</div>`;
+    html+=`</div>`;
+  });
+  document.getElementById("productionSections").innerHTML=html;
+}
+function start(k) {
+  let m = machines.find(x => x.key === k);
+  let s = getSklad();
+  if ((s[m.input] || 0) < (m.inputQty || 1)) return;
+  s[m.input] -= (m.inputQty || 1);
+  setSklad(s);
+  localStorage.setItem(k + "End", Date.now() + m.time);
+
+  // hned vykresli stav
+  renderProduction();
+
+  // stopne starý interval a pustí nový
+  if (intervals[k]) clearInterval(intervals[k]);
+  intervals[k] = setInterval(() => {
+    renderProduction();
+    if (isReady(k)) {
+      clearInterval(intervals[k]);
+      intervals[k] = null;
+      renderProduction();
+    }
+  }, 500);
+}
+
+function isReady(k){
+  if(localStorage.getItem(k+"Ready")==="1")return true;
+  let end=parseInt(localStorage.getItem(k+"End")||"0",10);
+  if(end&&Date.now()>=end){
+    localStorage.removeItem(k+"End");
+    localStorage.setItem(k+"Ready","1");
+    return true;
+  }
+  return false;
+}
+function collect(k){
+  let m=machines.find(x=>x.key===k);
+  let s=getSklad();
+  s[m.output]=(s[m.output]||0)+1;
+  setSklad(s);
+  localStorage.removeItem(k+"Ready");
+  if(intervals[k]){clearInterval(intervals[k]);intervals[k]=null;}
+  vypisStatus(`Collected 1 ${m.output}!`,1);
+  renderProduction();
+}
+let intervals={};
+window.onload = function () {
+  stavPrachy();
+  renderPiBalance();
+  renderMachinesShop();
+  renderProduction();
+
+  // zkontroluje rozpracované stroje a spustí jim intervaly
+  machines.forEach(m => {
+    if (localStorage.getItem(m.key + "End")) {
+      if (intervals[m.key]) clearInterval(intervals[m.key]);
+      intervals[m.key] = setInterval(() => {
+        renderProduction();
+        if (isReady(m.key)) {
+          clearInterval(intervals[m.key]);
+          intervals[m.key] = null;
+          renderProduction();
+        }
+      }, 500);
+    }
+  });
+};
+
+</script>
+</body>
+</html>
