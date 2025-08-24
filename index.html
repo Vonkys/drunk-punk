@@ -381,45 +381,6 @@
 }
 
 
-function autoLoadGameFromCloud() {
-  var username = getPiUsername();
-  if (!username) return;
-
-  firestore.collection("pi_saves").doc(username).get().then(function (doc) {
-    if (doc.exists && doc.data().data) {
-      const data = doc.data().data;
-
-      for (const k in data) {
-        const value = data[k];
-
-        if (k === "xpHistory") {
-          if (Array.isArray(value)) {
-            localStorage.setItem(k, JSON.stringify(value));
-          } else {
-            try {
-              localStorage.setItem(k, JSON.stringify(JSON.parse(value)));
-            } catch {
-              localStorage.setItem(k, "[]");
-            }
-          }
-
-        } else {
-          try {
-            const parsed = JSON.parse(value);
-            localStorage.setItem(k, JSON.stringify(parsed));
-          } catch {
-            localStorage.setItem(k, value);
-          }
-        }
-      }
-
-      document.getElementById("cloudMsg").innerText = "✅ Game auto-loaded!";
-      setTimeout(() => location.reload(), 900);
-    }
-  }).catch(function (error) {
-    console.error("Auto-load error:", error.message);
-  });
-}
 
 
     </script>
