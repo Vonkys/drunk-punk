@@ -860,7 +860,6 @@ function renderManurePauseInfo() {
     var min = Math.floor((totalSeconds % 3600) / 60);
     var sec = totalSeconds % 60;
     el.textContent = "" +
-      (days > 0 ? days + "d " : "") +
       (hod > 0 ? hod + "h " : "") +
       (min > 0 ? min + " min " : "") +
       sec + " s.";
