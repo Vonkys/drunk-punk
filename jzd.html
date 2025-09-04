@@ -853,15 +853,14 @@ function renderManurePauseInfo() {
   var now = Date.now();
   var el = document.getElementById("manure-paused-info");
   if (!el) return;
-  if (pauseUntil > now) {
+ if (pauseUntil > now) {
     var totalSeconds = Math.ceil((pauseUntil - now) / 1000);
-    var days = Math.floor(totalSeconds / 86400);
-    var hod = Math.floor((totalSeconds % 86400) / 3600) % 24;
-    var min = Math.floor((totalSeconds % 3600) / 60);
+    var hod = Math.floor(totalSeconds / 3600);
+    var min = Math.floor((totalSeconds % 3600) / 60) % 60;
     var sec = totalSeconds % 60;
-    el.textContent = "" +
-      (hod > 0 ? hod + "h " : "") +
-      (min > 0 ? min + " min " : "") +
+    el.textContent = "" + 
+      (hod > 0 ? hod + "h " : "") + 
+      (min > 0 ? min + " min " : "") + 
       sec + " s.";
   } else {
     el.textContent = "";
