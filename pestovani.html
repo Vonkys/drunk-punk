@@ -548,7 +548,7 @@ body { padding-top: 48px; }
 
 <script>
 let plots = [];
-let PLOTS_COUNT = 24;
+let PLOTS_COUNT = 32;
 const cropsData = {
   
   "pšenice": {emoji: "🌾", growTime: 120, class: "pole", storage: "pšenice", xp: 1, display:"Wheat"},
@@ -662,9 +662,9 @@ function loadGame() {
   const boostEnd = parseInt(localStorage.getItem("farmBoostUntil") || "0");
   const now = Date.now();
   if (boostEnd && now < boostEnd) {
-    PLOTS_COUNT = 28;
+    PLOTS_COUNT = 36;
   } else {
-    PLOTS_COUNT = 24;
+    PLOTS_COUNT = 32;
     localStorage.removeItem("farmBoostUntil");
   }
 
