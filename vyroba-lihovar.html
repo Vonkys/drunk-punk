@@ -207,7 +207,7 @@ function vykresliPalenici() {
   if (machines.indexOf("palenice") === -1) {
     html += "<span class='need'>You need a distillation setup first!</span>";
   } else {
-    html += "<label for='paleniceSelect'><b>Pick fermented mash:</b></label> ";
+    html += "<label for='paleniceSelect'><b>Pick a mash:</b></label> ";
     html += "<select id='paleniceSelect'>";
     for (var i = 0; i < OVOCE.length; i++) {
       var fruit = OVOCE[i];
