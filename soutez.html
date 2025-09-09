@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>🏆 Contest – Drunk-Punk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#208278">
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <style>
+    body{font-family:'Segoe UI',Arial,sans-serif;background:#f8fbff;margin:0;padding:56px 14px 30px;text-align:center}
+    .nav-bar{position:fixed;top:0;left:0;width:100%;background:#2196f3;color:#fff;display:flex;justify-content:flex-end;gap:2px;box-shadow:0 2px 8px #0002;padding:7px 0;z-index:10}
+    .nav-link{color:#fff;padding:7px 14px;text-decoration:none;font-weight:bold;border-radius:0 0 10px 10px;transition:background .15s}
+    .nav-link.active,.nav-link:hover{background:#1760a3}
+    .title{color:#208278;margin:8px 0 18px;font-size:2em;font-weight:900}
+    .sub{color:#456;font-size:1.02em;margin:-8px 0 16px}
+    .container{max-width:860px;margin:0 auto}
+    .card{background:#fff;border-radius:14px;box-shadow:0 10px 30px #00000012;padding:18px;margin:0 auto 16px;text-align:left}
+    .card h3{margin:4px 0 8px 0;color:#1760a3}
+    .row{display:flex;gap:14px;flex-wrap:wrap}
+    .col{flex:1 1 320px}
+    .pill{display:inline-block;background:#e9f6fd;color:#124061;border:2px solid #bee7ff;padding:6px 12px;border-radius:999px;font-weight:700}
+    .btn{background:#37af7b;color:#fff;border:none;border-radius:9px;padding:9px 16px;cursor:pointer;font-weight:700}
+    .btn:hover{background:#136652}
+    .link-btn{display:inline-block;text-decoration:none}
+    .muted{color:#666;font-size:0.95em}
+    .list li{margin:6px 0}
+    .footer-note{color:#7a7a7a;font-size:0.9em;margin-top:10px}
+    @media (max-width:720px){.title{font-size:1.7em}}
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <div class="nav-bar">
+    <a href="index.html" class="nav-link">🏠 Home</a>
+    <a href="mesic.html" class="nav-link">📊 Monthly Stats</a>
+    <a href="soutez.html" class="nav-link active">🏆 Contest</a>
+  </div>
+
+  <div class="container">
+    <h1 class="title">🏆 Monthly Contest</h1>
+    <div class="sub">Current season: <span id="seasonId" class="pill">—</span></div>
+
+    <div class="card">
+      <h3>Reward</h3>
+      <p class="muted">
+        The player with the <b>highest XP</b> at the end of the month wins <b>5&nbsp;Pi</b>
+        (the real mined Pi, not the in-game currency).
+      </p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px">
+        <a class="link-btn" href="mesic.html"><button class="btn">Open monthly stats</button></a>
+        <a class="link-btn" href="index.html"><button class="btn" style="background:#208278">Back to Home</button></a>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card col">
+        <h3>Rules</h3>
+        <ul class="list">
+          <li><b>Period:</b> calendar month (1st → last day).</li>
+          <li><b>Ranking:</b> based on monthly XP in <a href="mesic.html">Monthly Stats</a>.</li>
+          <li><b>Reward:</b> 5&nbsp;Pi for the #1 player of the month.</li>
+          <li><b>Fair play:</b> obvious exploits/bugs → disqualification.</li>
+        </ul>
+      </div>
+
+      <div class="card col">
+        <h3>How to check your rank</h3>
+        <ol class="list">
+          <li>Open <a href="mesic.html">📊 Monthly Stats</a>.</li>
+          <li>Ensure you are on the <b>monthly</b> view.</li>
+          <li>Compare total XP – the highest wins.</li>
+        </ol>
+        <p class="footer-note">The game already collects the data; no extra steps needed.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Payout</h3>
+      <p class="muted">
+        After the month ends, the winner is verified based on the stats and the 5&nbsp;Pi reward
+        is transferred in the Pi ecosystem according to hackathon/backend rules.
+        In case of a tie, tie-break rules may apply (e.g. who reached the XP earlier).
+        <br><br>
+        <b>The winner must contact the organizer at
+        <a href="mailto:dr.coolman@seznam.cz">dr.coolman@seznam.cz</a> to arrange the payout.</b>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Display current season as YYYY-MM
+    (function(){
+      var d=new Date();
+      var id=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+      var el=document.getElementById("seasonId");
+      if(el) el.textContent=id;
+    })();
+  </script>
+</body>
+</html>
